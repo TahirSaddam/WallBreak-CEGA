@@ -1,0 +1,385 @@
+CLASS 9: PROCEDURAL GENERATION - WALL GENERATOR
+===============================================
+
+SLIDE 1: Recap of Class 8
+--------------------------
+- Forces and ForceMode types
+- AddForce and AddTorque
+- Impact direction calculation
+- Physics.OverlapSphere
+- Area-of-effect impacts
+- Brick detachment system
+
+SLIDE 2: What is Procedural Generation?
+----------------------------------------
+- Creating content algorithmically
+- Using code instead of manual placement
+- Advantages:
+  * Saves time
+  * Creates variety
+  * Enables dynamic content
+  * Reduces file size
+- Examples: Minecraft, No Man's Sky
+
+SLIDE 3: Why Generate Walls?
+-----------------------------
+- Manual placement: Tedious, error-prone
+- 100+ bricks per wall
+- Multiple walls needed
+- Easy to adjust (rows, columns, spacing)
+- Consistent results
+- Enables patterns and variations
+
+SLIDE 4: Grid-Based Generation
+-------------------------------
+- Organize objects in rows and columns
+- Use nested loops (row loop, column loop)
+- Calculate position mathematically
+- Consistent spacing
+- Easy to modify
+
+SLIDE 5: Nested Loops
+----------------------
+```csharp
+for (int row = 0; row < rows; row++)
+{
+    for (int col = 0; col < columns; col++)
+    {
+        // Create brick at (col, row)
+        Debug.Log($"Position: ({col}, {row})");
+    }
+}
+```
+
+Outer loop: Rows (Y axis)
+Inner loop: Columns (X axis)
+
+SLIDE 6: Calculating Positions
+-------------------------------
+- Start position: Bottom-left of wall
+- Brick size: Width and height
+- Spacing: Gap between bricks
+- Formula:
+  * X = startX + (column × (brickWidth + spacing))
+  * Y = startY + (row × (brickHeight + spacing))
+
+SLIDE 7: Centering the Wall
+----------------------------
+- Calculate total width
+- Offset start position
+- Center on origin (0, 0, 0)
+
+```csharp
+float totalWidth = columns * (brickWidth + spacing);
+float startX = -totalWidth / 2f;
+```
+
+SLIDE 8: Instantiate Function
+------------------------------
+- Creates object at runtime
+- Syntax: Instantiate(prefab, position, rotation)
+- Returns reference to new object
+
+```csharp
+GameObject brick = Instantiate(
+    brickPrefab,
+    position,
+    Quaternion.identity
+);
+```
+
+SLIDE 9: Quaternion.identity
+-----------------------------
+- Represents "no rotation"
+- Quaternion: 4D rotation representation
+- identity = (0, 0, 0, 0) rotation
+- Euler angles: (0, 0, 0) degrees
+- Use for default rotation
+
+SLIDE 10: Parent-Child Hierarchy
+---------------------------------
+- Organize generated objects
+- Parent: Container object
+- Children: Generated bricks
+- Benefits:
+  * Clean hierarchy
+  * Easy to delete all
+  * Transform inheritance
+  * Organization
+
+```csharp
+brick.transform.parent = wallParent;
+```
+
+SLIDE 11: Transform.SetParent
+------------------------------
+- Better than direct assignment
+- Options for world/local space
+
+```csharp
+// Keep world position
+brick.transform.SetParent(wallParent, true);
+
+// Use local position
+brick.transform.SetParent(wallParent, false);
+```
+
+SLIDE 12: Local vs World Position
+----------------------------------
+World Position:
+- Absolute position in scene
+- Independent of parent
+
+Local Position:
+- Relative to parent
+- Changes with parent transform
+
+SLIDE 13: Brick Alternation Pattern
+------------------------------------
+- Offset every other row
+- Creates brick-laying pattern
+- More realistic wall
+- Formula: if (row % 2 == 1) offset by half brick
+
+```csharp
+float xOffset = (row % 2 == 1) ? brickWidth / 2f : 0f;
+```
+
+SLIDE 14: Wall Generator Structure
+-----------------------------------
+```csharp
+public class WallGenerator3D : MonoBehaviour
+{
+    public Brick3D brickPrefab;
+    public int rows = 8;
+    public int columns = 12;
+    public float spacing = 0.05f;
+    public Transform bricksParent;
+    
+    void Start()
+    {
+        GenerateWall();
+    }
+    
+    void GenerateWall()
+    {
+        // Loop and create bricks
+    }
+}
+```
+
+SLIDE 15: Calculating Brick Position
+-------------------------------------
+```csharp
+Vector3 GetBrickPosition(int x, int y)
+{
+    Vector3 brickSize = brickPrefab.transform.localScale;
+    float totalWidth = columns * (brickSize.x + spacing);
+    Vector3 startPos = transform.position;
+    startPos.x -= totalWidth / 2f;
+    
+    float xOffset = (y % 2 == 1) ? (brickSize.x + spacing) / 2f : 0f;
+    
+    return startPos + new Vector3(
+        x * (brickSize.x + spacing) + xOffset,
+        y * brickSize.y,
+        0
+    );
+}
+```
+
+SLIDE 16: Applying Materials to Generated Objects
+--------------------------------------------------
+- Random colors for variety
+- Array of colors
+- Random selection
+
+```csharp
+public Color[] wallColors;
+
+void SetBrickColor(Brick3D brick)
+{
+    int randomIndex = Random.Range(0, wallColors.Length);
+    brick.SetColor(wallColors[randomIndex]);
+}
+```
+
+SLIDE 17: Counting Generated Objects
+-------------------------------------
+- Track how many bricks created
+- Useful for game logic
+- Increment counter in loop
+
+```csharp
+private int totalBricksCreated = 0;
+
+void GenerateWall()
+{
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < columns; x++)
+        {
+            CreateBrick(x, y);
+            totalBricksCreated++;
+        }
+    }
+}
+```
+
+SLIDE 18: Optimizing Generation
+--------------------------------
+- Generate in Start() or on demand
+- Don't generate every frame
+- Use object pooling for many objects
+- Consider performance with 100+ bricks
+- Batch operations when possible
+
+SLIDE 19: Vertical Bricks
+--------------------------
+- Some bricks rotated 90 degrees
+- Adds variety to wall
+- Random chance for vertical
+- Occupies two row spaces
+
+```csharp
+bool isVertical = Random.value < verticalBrickChance;
+Quaternion rotation = isVertical ? 
+    Quaternion.Euler(0, 0, 90) : 
+    Quaternion.identity;
+```
+
+SLIDE 20: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create WallGenerator3D script
+2. Add public variables (rows, columns, spacing)
+3. Implement nested loops
+4. Calculate brick positions
+5. Instantiate bricks in grid
+6. Parent bricks to container
+7. Apply random colors
+8. Test with different grid sizes
+
+SLIDE 21: Wall Generator Code Template
+---------------------------------------
+```csharp
+void GenerateWall()
+{
+    Vector3 brickSize = brickPrefab.transform.localScale;
+    Vector3 startPos = CalculateStartPosition();
+    
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < columns; x++)
+        {
+            Vector3 position = GetBrickPosition(x, y, startPos, brickSize);
+            Brick3D brick = Instantiate(brickPrefab, position, Quaternion.identity);
+            brick.transform.SetParent(bricksParent, false);
+            SetBrickColor(brick);
+        }
+    }
+}
+```
+
+SLIDE 22: Testing Generation
+-----------------------------
+- Start with small grid (3x3)
+- Verify positions correct
+- Check spacing
+- Test alternation pattern
+- Increase size gradually
+- Monitor performance
+
+SLIDE 23: Dynamic Wall Properties
+----------------------------------
+- Expose properties in Inspector
+- Adjust without code changes
+- Test different configurations
+- [Header] attribute for organization
+- [Range] attribute for sliders
+
+```csharp
+[Header("Wall Dimensions")]
+[Range(1, 20)]
+public int rows = 8;
+
+[Range(1, 20)]
+public int columns = 12;
+```
+
+SLIDE 24: Wall Patterns
+------------------------
+- Different brick arrangements
+- Enum for pattern types
+- Switch statement for logic
+
+```csharp
+public enum WallPattern
+{
+    Normal,
+    Checkerboard,
+    Diagonal,
+    Random
+}
+```
+
+SLIDE 25: Implementing Patterns
+--------------------------------
+```csharp
+bool ShouldPlaceBrick(int x, int y, WallPattern pattern)
+{
+    switch (pattern)
+    {
+        case WallPattern.Normal:
+            return true;
+        case WallPattern.Checkerboard:
+            return (x + y) % 2 == 0;
+        case WallPattern.Diagonal:
+            return x == y;
+        case WallPattern.Random:
+            return Random.value > 0.3f;
+        default:
+            return true;
+    }
+}
+```
+
+SLIDE 26: Common Generation Issues
+-----------------------------------
+- Wrong positions: Check math
+- Overlapping: Verify spacing
+- Missing bricks: Check loop ranges
+- Performance: Too many objects
+- Hierarchy messy: Use parent
+- Wrong rotation: Check Quaternion
+
+SLIDE 27: Best Practices
+-------------------------
+- Start simple, add complexity
+- Test with small numbers first
+- Use clear variable names
+- Comment complex calculations
+- Make properties adjustable
+- Keep generation code clean
+- Consider performance early
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create different grid sizes
+- Implement custom patterns
+- Add spacing variations
+- Try 3D grids (X, Y, Z)
+- Generate other objects (coins, enemies)
+- Optimize generation code
+- Experiment with procedural placement
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- C# Events and Delegates
+- Static events for communication
+- Action delegates
+- Subscribe/Unsubscribe pattern
+- Brick detachment events
+- Wall progression system
+- Decoupled architecture
+

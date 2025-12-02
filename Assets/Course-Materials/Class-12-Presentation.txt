@@ -1,0 +1,406 @@
+CLASS 12: UI SYSTEM WITH TEXTMESHPRO
+=====================================
+
+SLIDE 1: Recap of Class 11
+---------------------------
+- Game Manager pattern
+- Singleton implementation
+- Score system
+- Timer with Coroutines
+- Game flow and states
+- Manager coordination
+
+SLIDE 2: Unity UI System
+-------------------------
+- Built-in UI framework
+- Canvas-based rendering
+- Screen space or world space
+- Event system for interactions
+- Scalable for different resolutions
+- Components: Text, Image, Button, etc.
+
+SLIDE 3: The Canvas
+--------------------
+- Root of all UI elements
+- Required for UI rendering
+- Render modes:
+  * Screen Space - Overlay: Always on top
+  * Screen Space - Camera: Rendered by camera
+  * World Space: In 3D world
+- We'll use Screen Space - Overlay
+
+SLIDE 4: Creating a Canvas
+---------------------------
+Steps:
+1. Right-click Hierarchy
+2. UI > Canvas
+3. Automatically creates EventSystem
+4. Canvas Scaler for resolution handling
+5. All UI must be child of Canvas
+
+SLIDE 5: Canvas Scaler
+-----------------------
+- Handles different screen sizes
+- Scale Mode options:
+  * Constant Pixel Size: Fixed size
+  * Scale With Screen Size: Adapts to resolution
+  * Constant Physical Size: Based on DPI
+
+We'll use: Scale With Screen Size
+Reference Resolution: 1920x1080
+
+SLIDE 6: EventSystem
+---------------------
+- Handles UI input
+- Required for buttons, clicks
+- One per scene
+- Automatically created with Canvas
+- Manages: Mouse, keyboard, gamepad input
+
+SLIDE 7: RectTransform
+-----------------------
+- UI version of Transform
+- Properties:
+  * Anchors: Where UI attaches
+  * Pivot: Rotation/scale point
+  * Position: Offset from anchors
+  * Size: Width and height
+- More complex than Transform
+
+SLIDE 8: Anchors
+-----------------
+- Define how UI scales/positions
+- Four anchor points (min/max X/Y)
+- Presets in Inspector
+- Common: Center, Top-Left, Stretch
+- Crucial for responsive UI
+
+SLIDE 9: Panels
+---------------
+- Container for UI elements
+- Image component (can be transparent)
+- Organize UI into sections
+- Enable/disable groups easily
+- Our panels:
+  * Main Menu
+  * Time Selection
+  * Gameplay
+  * Pause
+  * Game Over
+
+SLIDE 10: Creating a Panel
+---------------------------
+Steps:
+1. Right-click Canvas
+2. UI > Panel
+3. Rename appropriately
+4. Adjust RectTransform (usually stretch all)
+5. Set background color/image
+6. Add child UI elements
+
+SLIDE 11: TextMeshPro vs Unity Text
+------------------------------------
+Unity Text (Legacy):
+- Built-in, simple
+- Lower quality
+- Limited features
+
+TextMeshPro (TMP):
+- Higher quality rendering
+- Better performance
+- Rich text features
+- Font assets
+- Industry standard
+
+SLIDE 12: Importing TextMeshPro
+--------------------------------
+First use:
+1. Add TMP text object
+2. Unity prompts to import
+3. Click "Import TMP Essentials"
+4. Creates TextMesh Pro folder
+5. Includes default fonts and resources
+
+SLIDE 13: TextMeshPro - Text (UI)
+----------------------------------
+- UI text component
+- Properties:
+  * Text: Content to display
+  * Font Asset: TMP font
+  * Font Size: Size in points
+  * Color: Text color
+  * Alignment: Left, Center, Right
+  * Wrapping: Enable/disable
+  * Overflow: How to handle excess text
+
+SLIDE 14: Creating TMP Text
+----------------------------
+Steps:
+1. Right-click Panel
+2. UI > Text - TextMeshPro
+3. Set text content
+4. Adjust font size
+5. Set color
+6. Align as needed
+7. Position with RectTransform
+
+SLIDE 15: Buttons
+------------------
+- Interactive UI element
+- Components:
+  * Image: Visual appearance
+  * Button: Click handling
+  * Text (child): Button label
+- States: Normal, Highlighted, Pressed, Disabled
+- OnClick event in Inspector
+
+SLIDE 16: Button States
+------------------------
+- Normal: Default appearance
+- Highlighted: Mouse over
+- Pressed: Being clicked
+- Selected: Keyboard/gamepad selection
+- Disabled: Not interactable
+
+Transition types:
+- Color Tint: Change color
+- Sprite Swap: Change image
+- Animation: Play animation
+
+SLIDE 17: Button Events
+------------------------
+Two methods:
+
+1. Inspector (Unity Event):
+```
+Drag object to OnClick()
+Select method from dropdown
+```
+
+2. Code:
+```csharp
+button.onClick.AddListener(OnButtonClicked);
+
+void OnButtonClicked()
+{
+    Debug.Log("Button clicked!");
+}
+```
+
+SLIDE 18: Our UI Structure
+---------------------------
+Canvas
+├── MainMenuPanel
+│   ├── Title Text
+│   ├── Play Button
+│   └── Quit Button
+├── TimeSelectPanel
+│   ├── Time Buttons (1min, 3min, 5min)
+│   └── Back Button
+├── GameplayPanel
+│   ├── Score Text
+│   └── Timer Text
+├── PausePanel
+│   ├── Resume Button
+│   └── Quit Button
+└── GameOverPanel
+    ├── Final Score Text
+    └── Play Again Button
+
+SLIDE 19: Updating Text from Code
+----------------------------------
+```csharp
+using TMPro;
+
+public class UIManager : MonoBehaviour
+{
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text timerText;
+    
+    public void SetScoreText(int score)
+    {
+        scoreText.text = score.ToString();
+    }
+    
+    public void SetTimerText(int time)
+    {
+        timerText.text = time.ToString();
+    }
+}
+```
+
+SLIDE 20: Panel Management
+---------------------------
+```csharp
+[SerializeField] private GameObject mainPanel;
+[SerializeField] private GameObject gameplayPanel;
+[SerializeField] private GameObject endPanel;
+
+public void ShowGameplay()
+{
+    mainPanel.SetActive(false);
+    gameplayPanel.SetActive(true);
+    endPanel.SetActive(false);
+}
+```
+
+SLIDE 21: Button Click Handlers
+--------------------------------
+```csharp
+public void OnPlayButtonClicked()
+{
+    mainPanel.SetActive(false);
+    timeSelectPanel.SetActive(true);
+}
+
+public void OnTimeSelected(int minutes)
+{
+    int seconds = minutes * 60;
+    gameManager.StartGame(seconds);
+    ShowGameplayPanel();
+}
+
+public void OnQuitButtonClicked()
+{
+    Application.Quit();
+}
+```
+
+SLIDE 22: Images
+-----------------
+- Display sprites/textures
+- Properties:
+  * Source Image: Sprite to display
+  * Color: Tint color
+  * Material: Custom material
+  * Raycast Target: Can be clicked
+- Use for: Backgrounds, icons, decorations
+
+SLIDE 23: Layout Groups
+------------------------
+- Automatic positioning of children
+- Types:
+  * Horizontal Layout Group
+  * Vertical Layout Group
+  * Grid Layout Group
+- Properties: Spacing, padding, alignment
+- Useful for: Button rows, inventories
+
+SLIDE 24: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create Canvas with proper scaling
+2. Create Main Menu panel with buttons
+3. Create Gameplay panel with score/timer
+4. Create Game Over panel
+5. Import TextMeshPro
+6. Add TMP text components
+7. Create UIManager script
+8. Wire up button events
+9. Test panel switching
+
+SLIDE 25: UIManager Structure
+------------------------------
+```csharp
+using TMPro;
+using UnityEngine;
+
+public class UIManager : MonoBehaviour
+{
+    [Header("Panels")]
+    [SerializeField] private GameObject mainPanel;
+    [SerializeField] private GameObject gameplayPanel;
+    [SerializeField] private GameObject endPanel;
+    
+    [Header("Texts")]
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text timerText;
+    [SerializeField] private TMP_Text finalScoreText;
+    
+    private GameManager gameManager;
+    
+    void Start()
+    {
+        gameManager = GetComponent<GameManager>();
+        ShowMainMenu();
+    }
+    
+    public void ShowMainMenu() { /* ... */ }
+    public void ShowGameplay() { /* ... */ }
+    public void ShowEndScreen(int score) { /* ... */ }
+    public void SetScoreText(int score) { /* ... */ }
+    public void SetTimerText(int time) { /* ... */ }
+}
+```
+
+SLIDE 26: Responsive UI Design
+-------------------------------
+- Use anchors properly
+- Test multiple resolutions
+- Consider aspect ratios
+- Use Canvas Scaler
+- Safe area for mobile
+- Minimum font sizes
+- Touch-friendly button sizes
+
+SLIDE 27: UI Best Practices
+----------------------------
+- Keep hierarchy organized
+- Name objects clearly
+- Use prefabs for repeated UI
+- Disable Raycast Target when not needed
+- Use TextMeshPro over Unity Text
+- Test on target resolutions
+- Keep UI simple and clear
+- Consider accessibility
+
+SLIDE 28: Common UI Issues
+---------------------------
+- UI not visible: Check Canvas, sorting
+- Button not clicking: Check EventSystem, Raycast Target
+- Text cut off: Adjust RectTransform size
+- Wrong position: Check anchors
+- Blurry text: Check Canvas Scaler settings
+- UI too small/large: Adjust reference resolution
+
+SLIDE 29: Debugging UI
+-----------------------
+- Scene view: See UI layout
+- Game view: Test appearance
+- Rect Tool (T): Adjust UI elements
+- Check Canvas render mode
+- Verify EventSystem exists
+- Use Layout Groups for alignment
+- Check sorting order for overlap
+
+SLIDE 30: Rich Text in TMP
+---------------------------
+- Formatting within text
+- Tags: <b>, <i>, <color>, <size>
+
+```csharp
+scoreText.text = "Score: <color=yellow>1000</color>";
+timerText.text = "<size=150%>TIME'S UP!</size>";
+```
+
+SLIDE 31: Homework/Practice
+----------------------------
+- Create complete UI for a game
+- Experiment with anchors
+- Build responsive layouts
+- Try different TMP fonts
+- Implement settings panel
+- Add animations to UI
+- Test on different resolutions
+- Create UI prefabs
+
+SLIDE 32: Next Class Preview
+-----------------------------
+- Audio in Unity
+- AudioSource and AudioClip
+- Background music vs sound effects
+- SoundManager singleton
+- Playing sounds on events
+- Audio mixing and volume control
+- Implementing complete audio system
+

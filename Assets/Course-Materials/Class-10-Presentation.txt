@@ -1,0 +1,446 @@
+CLASS 10: EVENTS & DELEGATES
+============================
+
+SLIDE 1: Recap of Class 9
+--------------------------
+- Procedural generation concepts
+- Nested loops for grids
+- Instantiate function
+- Parent-child hierarchy
+- Wall generation system
+- Position calculation
+
+SLIDE 2: The Communication Problem
+-----------------------------------
+Without events:
+- Direct references between objects
+- Tight coupling
+- Hard to maintain
+- Difficult to extend
+- Objects must know about each other
+
+With events:
+- Loose coupling
+- Easy to maintain
+- Flexible and extensible
+- Objects don't need direct references
+
+SLIDE 3: What are Delegates?
+-----------------------------
+- Delegate: Type-safe function pointer
+- Reference to a method
+- Can be passed as parameter
+- Can be stored in variable
+- Foundation for events
+
+```csharp
+public delegate void MyDelegate();
+```
+
+SLIDE 4: What are Events?
+--------------------------
+- Event: Special type of delegate
+- Publisher-Subscriber pattern
+- One object broadcasts, others listen
+- Decoupled communication
+- C# keyword: event
+
+```csharp
+public event Action OnSomethingHappened;
+```
+
+SLIDE 5: Action Delegate
+-------------------------
+- Built-in delegate type
+- No return value (void)
+- Can have 0-16 parameters
+- Most common delegate type
+
+```csharp
+Action                    // No parameters
+Action<int>              // One int parameter
+Action<int, string>      // Two parameters
+Action<Vector3>          // Vector3 parameter
+```
+
+SLIDE 6: Func Delegate
+-----------------------
+- Built-in delegate with return value
+- Last type parameter is return type
+
+```csharp
+Func<int>                // Returns int, no parameters
+Func<int, bool>          // Takes int, returns bool
+Func<string, int, float> // Takes string and int, returns float
+```
+
+SLIDE 7: Declaring Events
+--------------------------
+```csharp
+public class Brick : MonoBehaviour
+{
+    // Static event - accessible from anywhere
+    public static event Action<Brick> OnBrickDestroyed;
+    
+    // Instance event - specific to this object
+    public event Action OnThisBrickClicked;
+}
+```
+
+SLIDE 8: Invoking Events
+-------------------------
+- Check if null before invoking
+- Null-conditional operator: ?.
+- Passes data to subscribers
+
+```csharp
+void DestroyBrick()
+{
+    // Old way
+    if (OnBrickDestroyed != null)
+    {
+        OnBrickDestroyed(this);
+    }
+    
+    // Modern way
+    OnBrickDestroyed?.Invoke(this);
+}
+```
+
+SLIDE 9: Subscribing to Events
+-------------------------------
+- Use += to subscribe
+- Method signature must match
+- Subscribe in OnEnable()
+
+```csharp
+void OnEnable()
+{
+    Brick.OnBrickDestroyed += HandleBrickDestroyed;
+}
+
+void HandleBrickDestroyed(Brick brick)
+{
+    Debug.Log($"Brick destroyed: {brick.name}");
+}
+```
+
+SLIDE 10: Unsubscribing from Events
+------------------------------------
+- Use -= to unsubscribe
+- ALWAYS unsubscribe in OnDisable()
+- Prevents memory leaks
+- Prevents null reference errors
+
+```csharp
+void OnDisable()
+{
+    Brick.OnBrickDestroyed -= HandleBrickDestroyed;
+}
+```
+
+SLIDE 11: Why OnEnable/OnDisable?
+----------------------------------
+- OnEnable: Called when object enabled
+- OnDisable: Called when object disabled
+- Paired subscription/unsubscription
+- Prevents memory leaks
+- Handles scene loading/unloading
+- More reliable than Start/OnDestroy
+
+SLIDE 12: Static vs Instance Events
+------------------------------------
+Static Event:
+- Belongs to class, not instance
+- Global notification
+- Any script can subscribe
+- Example: Brick.OnAnyBrickDetached
+
+Instance Event:
+- Belongs to specific object
+- Local notification
+- Subscribe to specific instance
+- Example: thisBrick.OnClicked
+
+SLIDE 13: Event Parameters
+---------------------------
+- Pass data with event
+- Subscribers receive data
+- Can pass multiple parameters
+
+```csharp
+// Declare
+public static event Action<int, Vector3> OnScored;
+
+// Invoke
+OnScored?.Invoke(points, position);
+
+// Subscribe
+void HandleScored(int points, Vector3 position)
+{
+    // Use points and position
+}
+```
+
+SLIDE 14: Our Game's Event System
+----------------------------------
+Events we'll use:
+1. Brick3D.OnAnyBrickDetached
+   - When any brick detaches
+   - WallManager counts remaining bricks
+
+2. Brick3D.OnScoredPoints
+   - When brick scores points
+   - GameManager updates score
+
+3. WallGenerator3D.OnWallSetUp
+   - When wall generation complete
+   - Bricks can start physics checks
+
+SLIDE 15: OnAnyBrickDetached Event
+-----------------------------------
+```csharp
+// In Brick3D.cs
+public static Action<Brick3D> OnAnyBrickDetached;
+
+void DetachBrick()
+{
+    if (!wasDetached)
+    {
+        isDetached = true;
+        OnAnyBrickDetached?.Invoke(this);
+    }
+}
+
+// In WallManager.cs
+void OnEnable()
+{
+    Brick3D.OnAnyBrickDetached += HandleBrickDetached;
+}
+
+void HandleBrickDetached(Brick3D brick)
+{
+    remainingBricks--;
+}
+```
+
+SLIDE 16: OnScoredPoints Event
+-------------------------------
+```csharp
+// In Brick3D.cs
+public static Action<int> OnScoredPoints;
+
+void ScorePoints()
+{
+    OnScoredPoints?.Invoke(10);
+}
+
+// In GameManager.cs
+void OnEnable()
+{
+    Brick3D.OnScoredPoints += HandleScorePoints;
+}
+
+void HandleScorePoints(int points)
+{
+    score += points;
+    UpdateScoreUI();
+}
+```
+
+SLIDE 17: Benefits of Events
+-----------------------------
+1. Decoupling:
+   - Objects don't need references
+   - Easy to add/remove listeners
+
+2. Flexibility:
+   - Multiple subscribers
+   - Add features without changing existing code
+
+3. Maintainability:
+   - Clear communication flow
+   - Easy to debug
+
+4. Scalability:
+   - Add new systems easily
+   - No spaghetti code
+
+SLIDE 18: Event-Driven Architecture
+------------------------------------
+Traditional:
+- Object A calls Object B directly
+- Tight coupling
+- Hard to change
+
+Event-Driven:
+- Object A fires event
+- Object B listens for event
+- Loose coupling
+- Easy to change
+
+SLIDE 19: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Add OnAnyBrickDetached event to Brick3D
+2. Invoke when brick detaches
+3. Subscribe in WallManager
+4. Count remaining bricks
+5. Add OnScoredPoints event
+6. Test event system
+7. Log event firings
+8. Verify subscribe/unsubscribe
+
+SLIDE 20: Event Implementation Pattern
+---------------------------------------
+```csharp
+public class EventPublisher : MonoBehaviour
+{
+    // 1. Declare event
+    public static event Action<int> OnValueChanged;
+    
+    // 2. Invoke event
+    void ChangeValue(int newValue)
+    {
+        OnValueChanged?.Invoke(newValue);
+    }
+}
+
+public class EventSubscriber : MonoBehaviour
+{
+    // 3. Subscribe
+    void OnEnable()
+    {
+        EventPublisher.OnValueChanged += HandleValueChanged;
+    }
+    
+    // 4. Unsubscribe
+    void OnDisable()
+    {
+        EventPublisher.OnValueChanged -= HandleValueChanged;
+    }
+    
+    // 5. Handle event
+    void HandleValueChanged(int value)
+    {
+        Debug.Log($"Value changed to: {value}");
+    }
+}
+```
+
+SLIDE 21: Common Event Mistakes
+--------------------------------
+1. Forgetting to unsubscribe
+   - Memory leaks
+   - Multiple subscriptions
+
+2. Invoking without null check
+   - NullReferenceException
+
+3. Wrong method signature
+   - Won't compile or subscribe
+
+4. Subscribing in wrong place
+   - Use OnEnable, not Start
+
+5. Circular event chains
+   - Infinite loops
+
+SLIDE 22: Debugging Events
+---------------------------
+- Log when event fired
+- Log when subscribed/unsubscribed
+- Check subscriber count (not directly possible)
+- Use breakpoints
+- Verify method signatures match
+
+```csharp
+void OnEnable()
+{
+    Brick.OnDestroyed += HandleDestroyed;
+    Debug.Log("Subscribed to Brick.OnDestroyed");
+}
+```
+
+SLIDE 23: Event Execution Order
+--------------------------------
+- Events fire immediately
+- Subscribers called in subscription order
+- Synchronous, not asynchronous
+- All subscribers execute before continuing
+- No guaranteed order between subscribers
+
+SLIDE 24: UnityEvent vs C# Events
+----------------------------------
+UnityEvent:
+- Visible in Inspector
+- Can wire up in editor
+- Serializable
+- Slightly slower
+
+C# Event:
+- Code-only
+- Faster
+- More flexible
+- Better for systems
+
+SLIDE 25: When to Use Events
+-----------------------------
+Use events when:
+- Multiple objects need to know
+- Decoupling is important
+- Adding/removing listeners dynamically
+- Broadcasting notifications
+
+Don't use when:
+- Direct method call is simpler
+- Only one listener
+- Need return value (use Func)
+- Performance critical (direct call faster)
+
+SLIDE 26: Advanced: Event Arguments
+------------------------------------
+- Custom event data class
+- Inherit from EventArgs
+
+```csharp
+public class BrickEventArgs : EventArgs
+{
+    public Brick3D Brick { get; set; }
+    public Vector3 Position { get; set; }
+    public int Points { get; set; }
+}
+
+public event EventHandler<BrickEventArgs> OnBrickEvent;
+```
+
+SLIDE 27: Best Practices
+-------------------------
+- Always unsubscribe in OnDisable
+- Use null-conditional operator (?.)
+- Name events clearly (OnXxxHappened)
+- Use static events for global notifications
+- Use instance events for specific objects
+- Document what events do
+- Keep event handlers short
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create custom event system
+- Practice subscribe/unsubscribe
+- Implement multiple subscribers
+- Test event with parameters
+- Build event-driven feature
+- Read about Observer pattern
+- Experiment with UnityEvents
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- Game management systems
+- Singleton pattern
+- GameManager for game flow
+- Score and timer systems
+- Coroutines for timing
+- Game states (Menu, Playing, GameOver)
+- Coordinating game systems
+

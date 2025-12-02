@@ -1,0 +1,356 @@
+CLASS 8: FORCES & PHYSICS INTERACTIONS
+=======================================
+
+SLIDE 1: Recap of Class 7
+--------------------------
+- New Input System
+- Mouse click detection
+- Raycasting basics
+- Interface pattern (IOption)
+- RayCastManager implementation
+
+SLIDE 2: Forces in Physics
+---------------------------
+- Force: Push or pull on object
+- Measured in Newtons (N)
+- F = ma (Force = Mass × Acceleration)
+- Unity: Apply via Rigidbody.AddForce()
+- Creates realistic movement
+
+SLIDE 3: AddForce Method
+-------------------------
+```csharp
+Rigidbody rb;
+
+void Start()
+{
+    rb = GetComponent<Rigidbody>();
+    rb.AddForce(Vector3.up * 10f);
+}
+```
+
+Parameters:
+- Vector3: Direction and magnitude
+- ForceMode: How force is applied (optional)
+
+SLIDE 4: ForceMode Types
+-------------------------
+1. Force (default):
+   - Continuous force
+   - Considers mass
+   - Use in FixedUpdate()
+
+2. Impulse:
+   - Instant force (like explosion)
+   - Considers mass
+   - Perfect for impacts
+
+3. Acceleration:
+   - Continuous, ignores mass
+   - All objects accelerate equally
+
+4. VelocityChange:
+   - Instant, ignores mass
+   - Direct velocity change
+
+SLIDE 5: Force vs Impulse
+--------------------------
+Force:
+- Gradual acceleration
+- Applied over time
+- Example: Rocket engine
+
+Impulse:
+- Instant impact
+- Single frame application
+- Example: Explosion, jump, hit
+
+Our game: Use Impulse for brick impacts
+
+SLIDE 6: Direction Vectors
+---------------------------
+Common directions:
+```csharp
+Vector3.up      // (0, 1, 0)
+Vector3.down    // (0, -1, 0)
+Vector3.left    // (-1, 0, 0)
+Vector3.right   // (1, 0, 0)
+Vector3.forward // (0, 0, 1)
+Vector3.back    // (0, 0, -1)
+```
+
+Custom direction:
+```csharp
+Vector3 dir = new Vector3(1, 1, 0).normalized;
+```
+
+SLIDE 7: Calculating Impact Direction
+--------------------------------------
+- Direction: From impact point to object
+- Normalize for consistent force
+- Multiply by force magnitude
+
+```csharp
+Vector3 impactPoint = hit.point;
+Vector3 objectPos = transform.position;
+Vector3 direction = (objectPos - impactPoint).normalized;
+
+rb.AddForce(direction * forceAmount, ForceMode.Impulse);
+```
+
+SLIDE 8: Force Magnitude
+-------------------------
+- Magnitude: Strength of force
+- Higher value = Stronger push
+- Affected by mass (except Acceleration/VelocityChange)
+- Test to find right values
+- Our bricks: 400-1000 force units
+
+SLIDE 9: Torque (Rotational Force)
+-----------------------------------
+- Torque: Force that causes rotation
+- AddTorque(): Apply rotational force
+- Makes objects spin/tumble
+- Adds realism to impacts
+
+```csharp
+Vector3 torqueAxis = Vector3.right;
+float torqueStrength = 100f;
+rb.AddTorque(torqueAxis * torqueStrength, ForceMode.Impulse);
+```
+
+SLIDE 10: Random Torque
+------------------------
+- Random rotation for variety
+- Each brick spins differently
+- More dynamic and interesting
+
+```csharp
+Vector3 randomTorque = Random.onUnitSphere * torqueStrength;
+rb.AddTorque(randomTorque, ForceMode.Impulse);
+```
+
+SLIDE 11: Physics.OverlapSphere
+--------------------------------
+- Detects all colliders in sphere area
+- Perfect for explosion radius
+- Returns array of colliders
+
+```csharp
+float radius = 2f;
+Collider[] hits = Physics.OverlapSphere(position, radius);
+
+foreach (Collider hit in hits)
+{
+    // Process each hit object
+}
+```
+
+SLIDE 12: Area of Effect (AoE)
+-------------------------------
+- Impact affects nearby objects
+- Closer objects = Stronger effect
+- Calculate distance for falloff
+
+```csharp
+float distance = Vector3.Distance(hit.transform.position, center);
+float falloff = 1f - (distance / radius);
+float adjustedForce = maxForce * falloff;
+```
+
+SLIDE 13: Impact Radius Visualization
+--------------------------------------
+- Helps understand area of effect
+- Debug with Gizmos
+
+```csharp
+void OnDrawGizmos()
+{
+    Gizmos.color = Color.red;
+    Gizmos.DrawWireSphere(transform.position, impactRadius);
+}
+```
+
+SLIDE 14: Detaching Bricks
+---------------------------
+Process:
+1. Switch from kinematic to dynamic
+2. Apply impact force
+3. Apply random torque
+4. Trigger visual effects
+5. Update game state
+
+```csharp
+void DetachBrick(Vector3 impactPoint)
+{
+    rb.isKinematic = false;
+    ApplyImpactForce(impactPoint);
+    ApplyRandomTorque();
+}
+```
+
+SLIDE 15: Direct Hit vs Area Hit
+---------------------------------
+Direct Hit (clicked brick):
+- Stronger force
+- More dramatic effect
+- Primary target
+
+Area Hit (nearby bricks):
+- Weaker force
+- Distance-based falloff
+- Secondary targets
+
+SLIDE 16: Force Multipliers
+----------------------------
+- Adjust force based on context
+- Direct hit: 2-3x normal force
+- Distance multiplier: 1 to 0
+- Mass consideration: Heavier = More force needed
+
+```csharp
+float finalForce = baseForce * directHitMultiplier * distanceMultiplier;
+```
+
+SLIDE 17: Combining Forces
+---------------------------
+- Multiple forces can be applied
+- Horizontal push + Vertical lift
+- Creates more dynamic movement
+
+```csharp
+Vector3 horizontalForce = direction * impactForce;
+Vector3 verticalForce = Vector3.up * fallForce;
+Vector3 totalForce = horizontalForce + verticalForce;
+
+rb.AddForce(totalForce, ForceMode.Impulse);
+```
+
+SLIDE 18: Velocity Damping
+---------------------------
+- Reduce velocity after collision
+- Prevents endless bouncing
+- More controlled physics
+
+```csharp
+void OnCollisionEnter(Collision col)
+{
+    rb.velocity *= 0.8f;  // Reduce by 20%
+}
+```
+
+SLIDE 19: Our Brick Impact System
+----------------------------------
+Components:
+1. Detect click (RayCastManager)
+2. Call OnClicked on brick
+3. Switch to dynamic
+4. Apply impact force at point
+5. Apply random torque
+6. Find nearby bricks (OverlapSphere)
+7. Apply area force to nearby bricks
+
+SLIDE 20: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Implement DetachBrick method
+2. Apply force from impact point
+3. Add random torque
+4. Implement OverlapSphere detection
+5. Apply area-of-effect forces
+6. Test with different force values
+7. Observe realistic brick destruction
+
+SLIDE 21: Brick Impact Code
+----------------------------
+```csharp
+public void OnClicked(Vector3 impactPoint)
+{
+    // Detach this brick
+    DetachBrick(impactPoint, true);
+    
+    // Find nearby bricks
+    Collider[] nearby = Physics.OverlapSphere(
+        impactPoint, impactRadius);
+    
+    foreach (Collider col in nearby)
+    {
+        Brick3D brick = col.GetComponent<Brick3D>();
+        if (brick != null && brick != this)
+        {
+            brick.DetachBrick(impactPoint, false);
+        }
+    }
+}
+```
+
+SLIDE 22: Tuning Force Values
+------------------------------
+- Start with small values
+- Gradually increase
+- Test with different masses
+- Consider game feel
+- Balance realism vs fun
+
+Typical ranges:
+- Impact force: 400-1000
+- Fall force: 200-500
+- Torque: 100-400
+
+SLIDE 23: Physics Performance
+------------------------------
+- Many active Rigidbodies = Expensive
+- Optimize:
+  * Put sleeping objects to sleep
+  * Destroy fallen bricks
+  * Use simpler colliders
+  * Limit active objects
+  * Adjust physics timestep
+
+SLIDE 24: Common Force Issues
+------------------------------
+- Too weak: Increase force or reduce mass
+- Too strong: Decrease force or increase mass
+- No movement: Check isKinematic
+- Flies away: Too much force
+- Doesn't rotate: Add torque
+- Jittery: Use interpolation
+
+SLIDE 25: Testing Physics
+--------------------------
+- Test with various force values
+- Try different impact points
+- Test with multiple bricks
+- Check edge cases
+- Observe performance
+- Adjust based on feel
+
+SLIDE 26: Best Practices
+-------------------------
+- Use Impulse for instant impacts
+- Normalize direction vectors
+- Apply torque for realism
+- Use area effects for immersion
+- Test force values extensively
+- Consider mass in calculations
+- Cache Rigidbody references
+
+SLIDE 27: Homework/Practice
+----------------------------
+- Experiment with different force modes
+- Create explosion effect
+- Implement force falloff
+- Try different torque values
+- Build a destruction test scene
+- Optimize physics performance
+
+SLIDE 28: Next Class Preview
+-----------------------------
+- Procedural generation
+- Loops for creating grids
+- Instantiating multiple objects
+- Mathematical position calculation
+- Parent-child relationships
+- Creating brick walls
+- Wall patterns
+

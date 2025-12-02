@@ -1,0 +1,358 @@
+CLASS 7: INPUT SYSTEM & RAYCASTING
+===================================
+
+SLIDE 1: Recap of Class 6
+--------------------------
+- Collider types and properties
+- Trigger vs Collision
+- Collision events
+- Physics materials
+- Ground collision detection
+
+SLIDE 2: User Input in Games
+-----------------------------
+- Input: How players interact
+- Types: Keyboard, mouse, gamepad, touch
+- Unity Input System: Modern, flexible
+- Old Input Manager: Legacy system
+- We'll use New Input System
+
+SLIDE 3: New Input System vs Old
+---------------------------------
+Old Input Manager:
+- Simple but limited
+- Input.GetKey(), Input.GetMouseButton()
+- Hard-coded input
+
+New Input System:
+- More powerful and flexible
+- Rebindable controls
+- Multi-device support
+- Action-based system
+
+SLIDE 4: Installing Input System
+---------------------------------
+Steps:
+1. Window > Package Manager
+2. Find "Input System"
+3. Click Install
+4. Unity will restart
+5. May need to enable in Player Settings
+
+Note: Both systems can coexist
+
+SLIDE 5: Input Actions
+-----------------------
+- Action: Abstract input concept
+- Example: "Jump" action
+  * Could be: Space, Gamepad A, Touch
+- Separate action from implementation
+- Easy to rebind
+- Cross-platform friendly
+
+SLIDE 6: Creating Input Actions
+--------------------------------
+Method 1: Code-based (we'll use this)
+```csharp
+private InputAction clickAction;
+
+void Awake()
+{
+    clickAction = new InputAction();
+    clickAction.AddBinding("<Mouse>/leftButton");
+    clickAction.performed += OnClick;
+}
+```
+
+Method 2: Input Action Asset (visual editor)
+
+SLIDE 7: Mouse Input
+---------------------
+- Mouse position: Screen coordinates
+- Left button: Primary action
+- Right button: Secondary action
+- Middle button: Special actions
+- Scroll wheel: Zoom, menu navigation
+
+SLIDE 8: What is Raycasting?
+-----------------------------
+- Ray: Invisible line in 3D space
+- Cast from point in direction
+- Detects what it hits
+- Returns: Hit object, point, distance
+- Essential for: Shooting, clicking, line of sight
+
+SLIDE 9: Ray Components
+------------------------
+- Origin: Starting point (Vector3)
+- Direction: Which way it goes (Vector3)
+- Length: How far it travels (float)
+- LayerMask: What layers to hit (optional)
+
+```csharp
+Ray ray = new Ray(origin, direction);
+```
+
+SLIDE 10: Camera.ScreenPointToRay
+----------------------------------
+- Converts screen position to world ray
+- From camera through screen point
+- Perfect for mouse clicks
+
+```csharp
+Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+```
+
+SLIDE 11: Physics.Raycast
+--------------------------
+- Performs the raycast
+- Returns true if hit something
+- Outputs hit information
+
+```csharp
+if (Physics.Raycast(ray, out RaycastHit hit))
+{
+    Debug.Log("Hit: " + hit.collider.name);
+    Vector3 hitPoint = hit.point;
+}
+```
+
+SLIDE 12: RaycastHit Information
+---------------------------------
+```csharp
+RaycastHit hit;
+if (Physics.Raycast(ray, out hit))
+{
+    GameObject hitObject = hit.collider.gameObject;
+    Vector3 hitPoint = hit.point;
+    Vector3 hitNormal = hit.normal;
+    float distance = hit.distance;
+    Transform hitTransform = hit.transform;
+}
+```
+
+SLIDE 13: Raycast with Distance
+--------------------------------
+- Limit ray length
+- More efficient
+- Prevents hitting distant objects
+
+```csharp
+float maxDistance = 100f;
+if (Physics.Raycast(ray, out hit, maxDistance))
+{
+    // Hit something within 100 units
+}
+```
+
+SLIDE 14: Raycast with LayerMask
+---------------------------------
+- Only hit specific layers
+- Optimization technique
+- Ignore certain objects
+
+```csharp
+LayerMask mask = LayerMask.GetMask("Brick");
+if (Physics.Raycast(ray, out hit, Mathf.Infinity, mask))
+{
+    // Only hits objects on "Brick" layer
+}
+```
+
+SLIDE 15: Interface Pattern
+----------------------------
+- Interface: Contract for classes
+- Defines methods classes must implement
+- Allows polymorphism
+- Clean, flexible code
+
+```csharp
+public interface IClickable
+{
+    void OnClicked(Vector3 point);
+}
+```
+
+SLIDE 16: Implementing Interfaces
+----------------------------------
+```csharp
+public class Brick : MonoBehaviour, IClickable
+{
+    public void OnClicked(Vector3 point)
+    {
+        Debug.Log("Brick clicked at: " + point);
+        // Handle click logic
+    }
+}
+```
+
+SLIDE 17: Using Interfaces with Raycasting
+-------------------------------------------
+```csharp
+if (Physics.Raycast(ray, out hit))
+{
+    IClickable clickable = hit.collider.GetComponent<IClickable>();
+    if (clickable != null)
+    {
+        clickable.OnClicked(hit.point);
+    }
+}
+```
+
+Benefits: Works with any clickable object!
+
+SLIDE 18: Our RayCastManager
+-----------------------------
+Responsibilities:
+- Listen for mouse clicks
+- Cast ray from camera
+- Detect hit objects
+- Call OnClicked on IOption interface
+- Handle input delays
+
+SLIDE 19: IOption Interface
+----------------------------
+```csharp
+public interface IOption
+{
+    void OnClicked(Vector3 impactPoint);
+}
+```
+
+- Simple, one method
+- Brick implements this
+- Receives click position
+- Can apply force at exact point
+
+SLIDE 20: Input Action Lifecycle
+---------------------------------
+```csharp
+void Awake()
+{
+    // Create and configure action
+    clickAction = new InputAction();
+    clickAction.AddBinding("<Mouse>/leftButton");
+    clickAction.performed += OnClick;
+}
+
+void OnEnable()
+{
+    clickAction.Enable();  // Start listening
+}
+
+void OnDisable()
+{
+    clickAction.Disable();  // Stop listening
+}
+```
+
+SLIDE 21: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Install Input System package
+2. Create RayCastManager script
+3. Set up mouse click detection
+4. Implement raycasting from camera
+5. Create IOption interface
+6. Make Brick implement IOption
+7. Log click position
+8. Test clicking on bricks
+
+SLIDE 22: RayCastManager Code Structure
+----------------------------------------
+```csharp
+public class RayCastManager : MonoBehaviour
+{
+    private Camera playerCamera;
+    private InputAction clickAction;
+    
+    void Start()
+    {
+        playerCamera = Camera.main;
+    }
+    
+    void Awake()
+    {
+        // Set up input action
+    }
+    
+    void OnMouseClick(CallbackContext ctx)
+    {
+        // Perform raycast
+    }
+}
+```
+
+SLIDE 23: Debugging Raycasts
+-----------------------------
+- Debug.DrawRay(): Visualize ray in Scene view
+- Gizmos: Show ray direction
+- Log hit information
+- Check camera position
+
+```csharp
+Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 1f);
+```
+
+SLIDE 24: Common Raycast Issues
+--------------------------------
+- No hit: Wrong layer, too short, wrong direction
+- Wrong object hit: Layer mask, collider issues
+- Multiple hits: Use RaycastAll or order
+- Performance: Cache camera, limit distance
+- Null reference: Check hit.collider exists
+
+SLIDE 25: Raycast Variations
+-----------------------------
+- Raycast: Single hit
+- RaycastAll: All hits along ray
+- RaycastNonAlloc: Performance version
+- SphereCast: Thick ray (sphere)
+- BoxCast: Box-shaped ray
+- CapsuleCast: Capsule-shaped ray
+
+SLIDE 26: Input Delays
+-----------------------
+- Prevent rapid clicking
+- Cooldown between inputs
+- Improves game feel
+- Prevents spam
+
+```csharp
+private float lastClickTime;
+private float clickDelay = 0.2f;
+
+if (Time.time - lastClickTime > clickDelay)
+{
+    // Process click
+    lastClickTime = Time.time;
+}
+```
+
+SLIDE 27: Best Practices
+-------------------------
+- Cache camera reference
+- Use LayerMask for optimization
+- Limit raycast distance
+- Disable input when not needed
+- Use interfaces for flexibility
+- Test with different objects
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create different clickable objects
+- Experiment with raycast distance
+- Try different input types
+- Implement click cooldown
+- Visualize rays with Debug.DrawRay
+- Read Input System documentation
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- Forces and physics interactions
+- AddForce and ForceMode
+- Applying impact forces
+- Torque for rotation
+- Physics.OverlapSphere
+- Creating impact radius effect
+

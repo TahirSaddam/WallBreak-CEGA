@@ -1,0 +1,313 @@
+CLASS 6: COLLIDERS & COLLISION DETECTION
+=========================================
+
+SLIDE 1: Recap of Class 5
+--------------------------
+- Rigidbody component
+- Mass, drag, and gravity
+- Kinematic vs Dynamic
+- Applying forces
+- Physics simulation basics
+
+SLIDE 2: What are Colliders?
+-----------------------------
+- Define physical shape for collisions
+- Invisible boundaries
+- Required for physics interactions
+- Separate from visual mesh
+- Can be different shape than visual
+
+SLIDE 3: Types of Colliders
+----------------------------
+Common 3D Colliders:
+- Box Collider: Rectangular box
+- Sphere Collider: Perfect sphere
+- Capsule Collider: Cylinder with rounded ends
+- Mesh Collider: Follows exact mesh shape
+- Terrain Collider: For terrain objects
+
+SLIDE 4: Box Collider
+----------------------
+- Most common and efficient
+- Rectangular shape
+- Properties:
+  * Center: Offset from GameObject center
+  * Size: Width, Height, Depth
+  * Is Trigger: Trigger vs Collision mode
+- Perfect for: Cubes, walls, boxes, bricks
+
+SLIDE 5: Sphere Collider
+-------------------------
+- Spherical shape
+- Very efficient (simple math)
+- Properties:
+  * Center: Offset position
+  * Radius: Size of sphere
+  * Is Trigger: Trigger mode
+- Perfect for: Balls, explosions, area detection
+
+SLIDE 6: Capsule Collider
+--------------------------
+- Cylinder with rounded ends
+- Good for characters
+- Properties:
+  * Center, Radius, Height
+  * Direction: X, Y, or Z axis
+  * Is Trigger
+- Perfect for: Characters, pills, cylinders
+
+SLIDE 7: Mesh Collider
+-----------------------
+- Follows exact mesh shape
+- Most accurate, most expensive
+- Properties:
+  * Mesh: Reference to mesh
+  * Convex: Required for Rigidbody
+  * Is Trigger
+- Use sparingly: Performance cost
+- Perfect for: Complex static geometry
+
+SLIDE 8: Collider Performance
+------------------------------
+Performance (Fast to Slow):
+1. Sphere Collider (fastest)
+2. Capsule Collider
+3. Box Collider
+4. Convex Mesh Collider
+5. Mesh Collider (slowest)
+
+Rule: Use simplest collider that works!
+
+SLIDE 9: Compound Colliders
+----------------------------
+- Multiple colliders on one object
+- Combine simple shapes for complex objects
+- More efficient than mesh collider
+- Example: Car = Box (body) + Spheres (wheels)
+- Child objects can have their own colliders
+
+SLIDE 10: Trigger vs Collision
+-------------------------------
+Collision (Is Trigger = OFF):
+- Physical collision
+- Objects bounce/stop
+- Requires Rigidbody on at least one
+- Use for: Walls, floors, physical objects
+
+Trigger (Is Trigger = ON):
+- No physical collision
+- Objects pass through
+- Detects overlap only
+- Use for: Pickups, zones, sensors
+
+SLIDE 11: Collision Events
+---------------------------
+Three collision methods:
+```csharp
+void OnCollisionEnter(Collision col)
+{
+    // When collision starts
+    Debug.Log("Hit: " + col.gameObject.name);
+}
+
+void OnCollisionStay(Collision col)
+{
+    // While colliding (every frame)
+}
+
+void OnCollisionExit(Collision col)
+{
+    // When collision ends
+}
+```
+
+SLIDE 12: Trigger Events
+-------------------------
+Three trigger methods:
+```csharp
+void OnTriggerEnter(Collider other)
+{
+    // When entering trigger
+    Debug.Log("Entered: " + other.gameObject.name);
+}
+
+void OnTriggerStay(Collider other)
+{
+    // While inside trigger
+}
+
+void OnTriggerExit(Collider other)
+{
+    // When leaving trigger
+}
+```
+
+SLIDE 13: Collision vs Trigger Events
+--------------------------------------
+OnCollision:
+- Parameter: Collision (has contact points, force)
+- Requires: Rigidbody + Collider
+- Physical response
+
+OnTrigger:
+- Parameter: Collider (just the other collider)
+- Requires: Rigidbody + Trigger Collider
+- No physical response
+
+SLIDE 14: Collision Requirements
+---------------------------------
+For collision to work:
+- Both objects need Colliders
+- At least one needs Rigidbody
+- Neither is trigger
+- Objects on compatible layers
+- Colliders are enabled
+
+SLIDE 15: Accessing Collision Data
+-----------------------------------
+```csharp
+void OnCollisionEnter(Collision collision)
+{
+    // Get other GameObject
+    GameObject other = collision.gameObject;
+    
+    // Get contact points
+    ContactPoint contact = collision.contacts[0];
+    Vector3 hitPoint = contact.point;
+    
+    // Get collision force
+    float force = collision.relativeVelocity.magnitude;
+}
+```
+
+SLIDE 16: Tags for Identification
+----------------------------------
+- Identify objects in collisions
+- Check tag before responding
+
+```csharp
+void OnCollisionEnter(Collision col)
+{
+    if (col.gameObject.CompareTag("Ground"))
+    {
+        Debug.Log("Hit the ground!");
+    }
+}
+```
+
+SLIDE 17: Physics Materials
+----------------------------
+- Control friction and bounciness
+- Create: Assets > Create > Physic Material
+- Properties:
+  * Dynamic Friction: Moving friction
+  * Static Friction: Stationary friction
+  * Bounciness: 0 (no bounce) to 1 (perfect bounce)
+  * Friction Combine: How to combine materials
+  * Bounce Combine: How to combine bounce
+
+SLIDE 18: Applying Physics Materials
+-------------------------------------
+- Assign to Collider component
+- Material slot in collider properties
+- Affects collision behavior
+- Examples:
+  * Ice: Low friction, no bounce
+  * Rubber: High friction, high bounce
+  * Metal: Medium friction, medium bounce
+
+SLIDE 19: Our Game's Collision Setup
+-------------------------------------
+Brick:
+- Box Collider (matches visual)
+- Rigidbody (kinematic initially)
+- Physics Material: Medium friction
+- Detects collision with ground
+
+Ground:
+- Box Collider (large, flat)
+- No Rigidbody (static)
+- Tag: "Ground"
+- Physics Material: High friction
+
+SLIDE 20: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Ensure brick has Box Collider
+2. Create Physics Material: "BrickMaterial"
+3. Set friction: 0.6, bounciness: 0.3
+4. Apply to brick collider
+5. Add collision detection code
+6. Log when brick hits ground
+7. Test in Play mode
+8. Observe collision behavior
+
+SLIDE 21: Collision Detection Code
+-----------------------------------
+```csharp
+void OnCollisionEnter(Collision collision)
+{
+    if (collision.gameObject.CompareTag("Ground"))
+    {
+        Debug.Log("Brick hit ground!");
+        
+        // Get impact force
+        float force = collision.relativeVelocity.magnitude;
+        Debug.Log($"Impact force: {force}");
+        
+        // Could trigger effects, sounds, etc.
+    }
+}
+```
+
+SLIDE 22: Layer-Based Collision
+--------------------------------
+- Layers control what collides with what
+- Edit > Project Settings > Physics
+- Layer Collision Matrix
+- Uncheck boxes to disable collision
+- Optimization: Reduce unnecessary checks
+
+SLIDE 23: Common Collision Issues
+----------------------------------
+- No collision: Missing Rigidbody or Collider
+- Falls through: Too fast (use Continuous detection)
+- Stuck: Overlapping colliders at start
+- Wrong collision: Check tags and layers
+- No event: Method name typo
+
+SLIDE 24: Debugging Collisions
+-------------------------------
+- Gizmos: Show colliders in Scene view
+- Physics Debugger: Visualize all colliders
+- Debug.Log in collision methods
+- Check Rigidbody constraints
+- Verify layer collision matrix
+
+SLIDE 25: Best Practices
+-------------------------
+- Use simplest collider possible
+- Avoid tiny colliders (scale issues)
+- Use triggers for detection zones
+- Use collisions for physical objects
+- Test collision layers early
+- Keep collider size reasonable
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Create objects with different colliders
+- Test trigger vs collision
+- Create custom physics materials
+- Experiment with bounciness
+- Build a collision detection system
+- Practice using collision events
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Unity Input System
+- Mouse click detection
+- Raycasting from camera
+- Hit detection on objects
+- Interface pattern (IOption)
+- Making bricks clickable
+
