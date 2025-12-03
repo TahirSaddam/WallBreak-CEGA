@@ -1,0 +1,365 @@
+CLASS 20: VISUAL EFFECTS I - PARTICLE SYSTEMS
+==============================================
+
+SLIDE 1: Recap of Class 19
+---------------------------
+- AudioSource and AudioClip
+- SoundManager singleton
+- Music vs SFX
+- PlayOneShot for effects
+- Event-driven audio
+- Volume and pitch variation
+
+SLIDE 2: Why Visual Effects?
+-----------------------------
+VFX provide:
+- Feedback (hit confirmation)
+- Satisfaction (explosions!)
+- Atmosphere (dust, sparks)
+- Information (damage, power-ups)
+- Polish and juice
+
+Makes games FEEL good!
+
+SLIDE 3: Particle Systems
+--------------------------
+- Emit many small sprites/meshes
+- Simulate particles over time
+- Birth, life, death cycle
+- Highly configurable
+- GPU accelerated
+
+Create: GameObject > Effects > Particle System
+
+SLIDE 4: Particle System Modules
+---------------------------------
+Main modules:
+- Main: Duration, looping, start values
+- Emission: How many, when
+- Shape: Where particles spawn
+- Velocity/Forces: Movement
+- Color/Size over Lifetime
+- Renderer: How to draw
+
+SLIDE 5: Main Module
+---------------------
+Key settings:
+- Duration: How long system runs
+- Looping: Repeat?
+- Start Lifetime: How long particles live
+- Start Speed: Initial velocity
+- Start Size: Particle size
+- Start Color: Particle color
+- Gravity Modifier: Fall speed
+
+SLIDE 6: Emission Module
+-------------------------
+Controls particle spawning:
+- Rate over Time: Particles per second
+- Rate over Distance: While moving
+- Bursts: Spawn many at once
+
+For impact effect:
+- Rate: 0
+- Burst: 20 particles at time 0
+
+SLIDE 7: Shape Module
+----------------------
+Where particles spawn:
+- Sphere: All directions
+- Cone: Directed spray
+- Box: Rectangle area
+- Circle: Flat ring
+- Edge: Line
+
+For impact: Hemisphere or Cone
+
+SLIDE 8: Velocity over Lifetime
+--------------------------------
+Change speed over time:
+- Linear: Constant direction
+- Orbital: Spin around center
+- Radial: Outward/inward
+
+For explosion: Strong initial radial
+
+SLIDE 9: Color over Lifetime
+-----------------------------
+Gradient from birth to death:
+- Start bright, fade out
+- Change hue over time
+- Alpha fade for soft disappear
+
+Common: White → Orange → Transparent
+
+SLIDE 10: Size over Lifetime
+-----------------------------
+Curve from birth to death:
+- Shrink as they die
+- Grow then shrink
+- Constant size
+
+Common: Start full, shrink to 0
+
+SLIDE 11: Renderer Module
+--------------------------
+How particles look:
+- Render Mode: Billboard, Mesh, etc.
+- Material: Particle material
+- Sort Mode: Rendering order
+- Max Particle Size: Screen limit
+
+Billboard = Always faces camera
+
+SLIDE 12: Creating Impact Effect
+---------------------------------
+Steps:
+1. Create Particle System
+2. Main:
+   - Duration: 0.5
+   - Looping: false
+   - Start Lifetime: 0.3-0.5
+   - Start Speed: 5-10
+   - Start Size: 0.2-0.5
+3. Emission: Burst of 15-25
+4. Shape: Hemisphere
+5. Color: Fade out
+6. Size: Shrink curve
+
+SLIDE 13: Saving as Prefab
+---------------------------
+1. Configure particle system
+2. Test in Scene view
+3. Drag to Prefabs folder
+4. Name: "ImpactEffect"
+5. Delete from scene
+6. Instantiate at runtime
+
+SLIDE 14: Instantiating Effects
+--------------------------------
+```csharp
+public class Brick3D : MonoBehaviour
+{
+    [SerializeField] private GameObject impactEffect;
+    
+    public void OnClicked(Vector3 impactPoint)
+    {
+        // Spawn effect at click point
+        Instantiate(impactEffect, impactPoint, Quaternion.identity);
+        
+        // ... rest of click logic
+    }
+}
+```
+
+SLIDE 15: Auto-Destroy Effects
+-------------------------------
+Effects should clean up:
+```csharp
+public class AutoDestroy : MonoBehaviour
+{
+    [SerializeField] private float lifetime = 2f;
+    
+    void Start()
+    {
+        Destroy(gameObject, lifetime);
+    }
+}
+```
+
+Attach to effect prefab!
+
+SLIDE 16: Using Cartoon FX
+---------------------------
+Our project has Cartoon FX package:
+- JMO Assets/Cartoon FX Remaster/
+- Pre-made effect prefabs
+- High quality, stylized
+- Just drag and use!
+
+Browse: CFXR Prefabs folder
+
+SLIDE 17: Assigning Effect Prefabs
+-----------------------------------
+```csharp
+public class Brick3D : MonoBehaviour
+{
+    [Header("Effects")]
+    [SerializeField] private GameObject hitEffect;
+    [SerializeField] private GameObject groundHitEffect;
+    [SerializeField] private GameObject destroyEffect;
+    
+    public void OnClicked(Vector3 point)
+    {
+        if (hitEffect != null)
+            Instantiate(hitEffect, point, Quaternion.identity);
+    }
+    
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            if (groundHitEffect != null)
+                Instantiate(groundHitEffect, 
+                    collision.contacts[0].point, 
+                    Quaternion.identity);
+        }
+    }
+}
+```
+
+SLIDE 18: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Explore Cartoon FX prefabs
+2. Create custom impact effect
+3. Add effect fields to Brick3D
+4. Assign effect prefabs
+5. Test hit effects
+6. Test ground collision effects
+7. Adjust effect sizes/colors
+
+SLIDE 19: Effect Placement
+---------------------------
+Where to spawn effects:
+```csharp
+// At click point
+Instantiate(effect, impactPoint, Quaternion.identity);
+
+// At brick center
+Instantiate(effect, transform.position, Quaternion.identity);
+
+// At collision point
+Instantiate(effect, collision.contacts[0].point, Quaternion.identity);
+
+// With rotation
+Instantiate(effect, position, Quaternion.LookRotation(normal));
+```
+
+SLIDE 20: Effect Rotation
+--------------------------
+Orient effect to surface:
+```csharp
+void OnCollisionEnter(Collision collision)
+{
+    Vector3 point = collision.contacts[0].point;
+    Vector3 normal = collision.contacts[0].normal;
+    
+    // Effect faces away from surface
+    Quaternion rotation = Quaternion.LookRotation(normal);
+    
+    Instantiate(groundEffect, point, rotation);
+}
+```
+
+SLIDE 21: Particle System Pooling
+----------------------------------
+For many effects, consider pooling:
+```csharp
+// Instead of Instantiate/Destroy
+ParticleSystem effect = pool.Get();
+effect.transform.position = position;
+effect.Play();
+
+// Return when done
+pool.Return(effect);
+```
+
+We'll keep it simple for now!
+
+SLIDE 22: Sub Emitters (Advanced)
+----------------------------------
+Particles that spawn particles:
+- On Birth: When particle spawns
+- On Collision: When hits something
+- On Death: When particle dies
+
+Creates complex effects!
+
+SLIDE 23: Trail Module
+-----------------------
+Particles leave trails:
+- Ratio: How many have trails
+- Lifetime: Trail duration
+- Width: Trail thickness
+- Color: Trail gradient
+
+Great for sparks, magic!
+
+SLIDE 24: Common VFX Mistakes
+------------------------------
+- Effect too big/small
+- Effect lasts too long
+- Too many particles (performance)
+- Not destroying effects
+- Wrong position/rotation
+- Effects not visible (wrong layer)
+
+SLIDE 25: Performance Tips
+---------------------------
+- Limit particle count
+- Use simple materials
+- Shorter lifetimes
+- Disable unneeded modules
+- Use object pooling
+- Profile particle systems
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Create 3 different effects
+- Add effects to all brick events
+- Experiment with modules
+- Try Cartoon FX variations
+- Adjust for visual style
+- Prepare for Polish (Class 21)
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Material effects (cracks)
+- Camera shake
+- Screen effects
+- Game feel polish
+- Feedback systems
+- Making impacts satisfying
+
+SLIDE 28: VFX Progress
+-----------------------
+Completed:
+- Understanding particle systems
+- Creating custom effects
+- Using Cartoon FX
+- Instantiating at runtime
+- Effect on click
+- Effect on ground hit
+
+Game has visual feedback!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Particle Systems emit particles
+- Modules control behavior
+- Burst emission for impacts
+- Instantiate prefabs at runtime
+- Auto-destroy or pool effects
+- Cartoon FX for quick results
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Spawn effect
+Instantiate(effectPrefab, position, rotation);
+
+// At collision point
+Vector3 point = collision.contacts[0].point;
+Vector3 normal = collision.contacts[0].normal;
+
+// With rotation
+Quaternion rot = Quaternion.LookRotation(normal);
+Instantiate(effect, point, rot);
+
+// Auto-destroy
+Destroy(gameObject, lifetime);
+```
+
+

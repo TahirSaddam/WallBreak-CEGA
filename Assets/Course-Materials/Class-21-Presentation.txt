@@ -1,0 +1,503 @@
+CLASS 21: VISUAL EFFECTS II - POLISH & GAME FEEL
+=================================================
+
+SLIDE 1: Recap of Class 20
+---------------------------
+- Particle System modules
+- Creating impact effects
+- Instantiating effect prefabs
+- Cartoon FX library
+- Effect at click point
+- Effect on ground collision
+
+SLIDE 2: What is Game Feel?
+----------------------------
+The "juice" that makes games satisfying:
+- Responsive controls
+- Impactful feedback
+- Visual polish
+- Audio sync
+- Screen effects
+- Animation
+
+"Feel" > Graphics
+
+SLIDE 3: Polish Elements
+-------------------------
+We'll cover:
+- Material effects (cracks)
+- Camera shake
+- Screen flash
+- Hit stop (time freeze)
+- UI feedback
+- Celebration effects
+
+SLIDE 4: Material Effects - Cracks
+-----------------------------------
+Show damage on bricks:
+```csharp
+[Header("Crack Effect")]
+[SerializeField] private Material crackedMaterial;
+[SerializeField] private Material normalMaterial;
+
+public void ShowCrack()
+{
+    GetComponent<MeshRenderer>().material = crackedMaterial;
+}
+```
+
+Visual damage indication!
+
+SLIDE 5: Progressive Damage
+----------------------------
+```csharp
+[SerializeField] private Material[] damageMaterials;
+private int damageLevel = 0;
+
+public void TakeDamage()
+{
+    damageLevel++;
+    
+    if (damageLevel < damageMaterials.Length)
+    {
+        GetComponent<MeshRenderer>().material = 
+            damageMaterials[damageLevel];
+    }
+    else
+    {
+        DestroyBrick();
+    }
+}
+```
+
+SLIDE 6: Camera Shake
+----------------------
+Screen shake on impact:
+```csharp
+public class CameraShake : MonoBehaviour
+{
+    public static CameraShake Instance;
+    
+    private Vector3 originalPosition;
+    
+    void Awake()
+    {
+        Instance = this;
+        originalPosition = transform.localPosition;
+    }
+    
+    public void Shake(float duration, float magnitude)
+    {
+        StartCoroutine(ShakeCoroutine(duration, magnitude));
+    }
+    
+    IEnumerator ShakeCoroutine(float duration, float magnitude)
+    {
+        float elapsed = 0f;
+        
+        while (elapsed < duration)
+        {
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+            
+            transform.localPosition = originalPosition + new Vector3(x, y, 0);
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        transform.localPosition = originalPosition;
+    }
+}
+```
+
+SLIDE 7: Triggering Camera Shake
+---------------------------------
+```csharp
+// In Brick3D
+public void OnClicked(Vector3 impactPoint)
+{
+    // Small shake on hit
+    CameraShake.Instance?.Shake(0.1f, 0.1f);
+    
+    // ... rest of code
+}
+
+void OnCollisionEnter(Collision collision)
+{
+    if (collision.gameObject.CompareTag("Ground"))
+    {
+        // Bigger shake on ground hit
+        CameraShake.Instance?.Shake(0.15f, 0.15f);
+    }
+}
+```
+
+SLIDE 8: Hit Stop (Time Freeze)
+--------------------------------
+Brief pause on impact:
+```csharp
+public class HitStop : MonoBehaviour
+{
+    public static void Freeze(float duration)
+    {
+        Time.timeScale = 0f;
+        
+        // Use unscaled time to resume
+        Instance.StartCoroutine(UnfreezeAfter(duration));
+    }
+    
+    static IEnumerator UnfreezeAfter(float duration)
+    {
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1f;
+    }
+}
+
+// Usage
+HitStop.Freeze(0.05f);  // 50ms freeze
+```
+
+SLIDE 9: Screen Flash
+----------------------
+```csharp
+public class ScreenFlash : MonoBehaviour
+{
+    [SerializeField] private Image flashImage;
+    
+    public void Flash(Color color, float duration)
+    {
+        StartCoroutine(FlashCoroutine(color, duration));
+    }
+    
+    IEnumerator FlashCoroutine(Color color, float duration)
+    {
+        flashImage.color = color;
+        flashImage.gameObject.SetActive(true);
+        
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float alpha = 1f - (elapsed / duration);
+            flashImage.color = new Color(color.r, color.g, color.b, alpha);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        flashImage.gameObject.SetActive(false);
+    }
+}
+```
+
+SLIDE 10: UI Feedback
+----------------------
+Score punch effect:
+```csharp
+public void UpdateScore(int score)
+{
+    scoreText.text = $"Score: {score}";
+    
+    // Punch scale
+    StartCoroutine(PunchScale(scoreText.transform));
+}
+
+IEnumerator PunchScale(Transform target)
+{
+    Vector3 original = target.localScale;
+    target.localScale = original * 1.3f;
+    
+    float elapsed = 0f;
+    float duration = 0.15f;
+    
+    while (elapsed < duration)
+    {
+        target.localScale = Vector3.Lerp(
+            original * 1.3f, 
+            original, 
+            elapsed / duration
+        );
+        elapsed += Time.deltaTime;
+        yield return null;
+    }
+    
+    target.localScale = original;
+}
+```
+
+SLIDE 11: Celebration Effect
+-----------------------------
+When wall is cleared:
+```csharp
+public void OnWallCleared()
+{
+    // Big celebration effect
+    Instantiate(celebrationEffect, wallCenter, Quaternion.identity);
+    
+    // Camera shake
+    CameraShake.Instance.Shake(0.3f, 0.2f);
+    
+    // Screen flash
+    ScreenFlash.Instance.Flash(Color.yellow, 0.2f);
+    
+    // Sound
+    SoundManager.Instance.PlayCelebration();
+}
+```
+
+SLIDE 12: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Add CameraShake script
+2. Implement shake on brick hit
+3. Add screen flash UI element
+4. Implement flash on events
+5. Add celebration effect
+6. Polish all feedback
+7. Test and tune values
+
+SLIDE 13: Feedback Layering
+----------------------------
+Combine multiple feedback:
+```csharp
+public void OnBrickDestroyed(Vector3 position)
+{
+    // Visual
+    Instantiate(destroyEffect, position, Quaternion.identity);
+    
+    // Audio
+    SoundManager.Instance.PlayDestroy();
+    
+    // Camera
+    CameraShake.Instance.Shake(0.1f, 0.1f);
+    
+    // UI
+    UIManager.Instance.PunchScore();
+}
+```
+
+More layers = More satisfaction!
+
+SLIDE 14: Timing is Everything
+-------------------------------
+Sync feedback:
+- Effect spawns immediately
+- Sound plays immediately
+- Camera shake slight delay
+- UI updates after effect
+
+Experiment with timing!
+
+SLIDE 15: Easing Functions
+---------------------------
+Smooth transitions:
+```csharp
+// Linear (boring)
+value = elapsed / duration;
+
+// Ease Out (satisfying)
+value = 1f - Mathf.Pow(1f - (elapsed / duration), 2);
+
+// Ease In Out
+float t = elapsed / duration;
+value = t < 0.5f 
+    ? 2f * t * t 
+    : 1f - Mathf.Pow(-2f * t + 2f, 2) / 2f;
+```
+
+We'll use DOTween for this (next class)!
+
+SLIDE 16: Color Feedback
+-------------------------
+```csharp
+// Flash brick red on hit
+IEnumerator FlashColor(Color flashColor)
+{
+    Material mat = GetComponent<MeshRenderer>().material;
+    Color original = mat.color;
+    
+    mat.color = flashColor;
+    yield return new WaitForSeconds(0.1f);
+    mat.color = original;
+}
+```
+
+SLIDE 17: Impact Direction Feedback
+------------------------------------
+Effect faces impact:
+```csharp
+public void OnClicked(Vector3 impactPoint)
+{
+    // Direction from impact to brick
+    Vector3 direction = (transform.position - impactPoint).normalized;
+    
+    // Spawn effect facing that direction
+    Quaternion rotation = Quaternion.LookRotation(direction);
+    Instantiate(hitEffect, impactPoint, rotation);
+}
+```
+
+SLIDE 18: Progressive Intensity
+--------------------------------
+Bigger effects for bigger impacts:
+```csharp
+void OnCollisionEnter(Collision collision)
+{
+    float impactForce = collision.relativeVelocity.magnitude;
+    
+    // Scale effect based on impact
+    if (impactForce > 10f)
+    {
+        Instantiate(bigImpactEffect, point, rotation);
+        CameraShake.Instance.Shake(0.2f, 0.2f);
+    }
+    else
+    {
+        Instantiate(smallImpactEffect, point, rotation);
+        CameraShake.Instance.Shake(0.1f, 0.1f);
+    }
+}
+```
+
+SLIDE 19: Sound-Visual Sync
+----------------------------
+```csharp
+public void OnBrickHit(Vector3 point)
+{
+    // All at once for sync
+    Instantiate(hitEffect, point, Quaternion.identity);
+    SoundManager.Instance.PlayBrickHit();
+    CameraShake.Instance.Shake(0.1f, 0.05f);
+}
+```
+
+Simultaneous = Impactful
+
+SLIDE 20: Polish Checklist
+---------------------------
+For each interaction:
+- [ ] Visual effect
+- [ ] Sound effect
+- [ ] Screen shake (if appropriate)
+- [ ] UI feedback
+- [ ] Timing feels right
+- [ ] Not too much/too little
+
+SLIDE 21: Common Polish Mistakes
+---------------------------------
+- Too much shake (nauseating)
+- Effects too long
+- Sound/visual mismatch
+- Inconsistent feedback
+- Overwhelming the player
+- Forgetting edge cases
+
+SLIDE 22: Testing Game Feel
+----------------------------
+Ask yourself:
+- Does clicking feel satisfying?
+- Is the feedback clear?
+- Does it feel responsive?
+- Is it overwhelming?
+- Would I want to keep playing?
+
+Get others to test!
+
+SLIDE 23: Homework/Practice
+----------------------------
+- Implement all polish effects
+- Tune shake values
+- Add celebration for wall clear
+- Test on different people
+- Iterate based on feedback
+- Prepare for DOTween (Class 22)
+
+SLIDE 24: Next Class Preview
+-----------------------------
+- DOTween animation library
+- Smooth tweening
+- Easing functions
+- Camera movement
+- Brick spawn animation
+- Professional polish
+
+SLIDE 25: Polish Progress
+--------------------------
+Completed:
+- Particle effects
+- Camera shake
+- Screen flash
+- UI feedback
+- Celebration effects
+- Layered feedback
+
+Game feels satisfying!
+
+SLIDE 26: Before and After
+---------------------------
+Before polish:
+- Click → Brick falls
+- Functional but boring
+
+After polish:
+- Click → Effect + Sound + Shake
+- Brick tumbles with physics
+- Ground hit → Dust + Sound
+- Wall clear → Celebration!
+
+Night and day difference!
+
+SLIDE 27: Game Feel Resources
+------------------------------
+Learn more:
+- "Juice it or lose it" (GDC talk)
+- "Game Feel" by Steve Swink
+- "The Art of Screen Shake"
+- Vlambeer's design talks
+
+SLIDE 28: Questions?
+---------------------
+Key Takeaways:
+- Game feel = Multiple feedback layers
+- Camera shake adds impact
+- Timing matters
+- Don't overdo it
+- Test with real players
+- Polish makes games fun
+
+SLIDE 29: Quick Reference
+--------------------------
+```csharp
+// Camera shake
+CameraShake.Instance.Shake(duration, magnitude);
+
+// Screen flash
+ScreenFlash.Instance.Flash(color, duration);
+
+// Hit stop
+Time.timeScale = 0f;
+yield return new WaitForSecondsRealtime(0.05f);
+Time.timeScale = 1f;
+
+// Layered feedback
+SpawnEffect();
+PlaySound();
+ShakeCamera();
+UpdateUI();
+```
+
+SLIDE 30: Polish Complete!
+---------------------------
+VFX Classes Complete:
+- Class 20: Particle Systems
+- Class 21: Polish & Game Feel
+
+Your game now has:
+- Visual effects
+- Audio feedback
+- Camera shake
+- Screen effects
+- Celebration moments
+
+3 classes to go!
+
+

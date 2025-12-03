@@ -1,0 +1,266 @@
+CLASS 1: UNITY EDITOR INTRODUCTION & BASIC ARCHITECTURE
+========================================================
+
+SLIDE 1: Welcome to Unity Game Development
+-------------------------------------------
+- Course Overview: Building a 3D Wall Breaking Game
+- 24 classes from beginner to intermediate
+- Hands-on learning approach
+- By the end: Complete polished game ready to publish
+- Two milestone sprints: Midterm (Class 16) and Final (Class 24)
+
+SLIDE 2: What is Unity?
+------------------------
+- Game engine for creating 2D and 3D games
+- Cross-platform development (PC, Mac, Mobile, Console, Web)
+- Used by indie developers and AAA studios
+- Free for students and small projects (Personal license)
+- C# programming language
+- Over 50% of all games are made with Unity
+
+SLIDE 3: Why Unity?
+--------------------
+- Beginner-friendly interface
+- Massive community and resources
+- Extensive documentation
+- Asset Store for ready-made content
+- Industry standard for mobile games
+- Great for learning game development fundamentals
+- Skills transfer to other engines
+
+SLIDE 4: Unity Hub
+-------------------
+- Central management for Unity
+- Install multiple Unity versions
+- Create and manage projects
+- Access learning resources
+- License management
+- Download additional modules
+
+How to access:
+- Download from unity.com
+- Sign in with Unity account (free)
+
+SLIDE 5: Creating a New Project
+--------------------------------
+Steps:
+1. Open Unity Hub
+2. Click "New Project"
+3. Select Unity version (LTS recommended)
+4. Choose "3D (URP)" template
+5. Name your project: "WallBreak3D"
+6. Choose location
+7. Click "Create Project"
+
+SLIDE 6: Understanding URP (Universal Render Pipeline)
+-------------------------------------------------------
+- Modern rendering system
+- Better performance than Built-in
+- Better graphics with less effort
+- Mobile-friendly
+- Industry standard for new projects
+- Pre-configured lighting and effects
+
+SLIDE 7: Unity Interface Overview
+----------------------------------
+Main Windows:
+- Scene View: Where you build your game world
+- Game View: What players will see (preview)
+- Hierarchy: List of all objects in current scene
+- Project: All assets and files in your project
+- Inspector: Properties of selected object
+- Console: Error messages and debug logs
+
+SLIDE 8: Scene View - Your Workspace
+-------------------------------------
+- 3D workspace where you build
+- Navigate, select, move objects
+- Visual representation of your game
+- Not what players see (that's Game View)
+- Grid helps with positioning
+- Gizmos show object properties
+
+SLIDE 9: Game View - Player's Perspective
+------------------------------------------
+- Preview of final game
+- What players will actually see
+- Shows camera view
+- Play button starts game here
+- Use for testing
+- Different from Scene View!
+
+SLIDE 10: Hierarchy Window
+---------------------------
+- Lists all GameObjects in scene
+- Tree structure (parent-child)
+- Select objects here
+- Organize with empty GameObjects
+- Right-click to create objects
+- Drag to reorder/parent
+
+SLIDE 11: Project Window
+-------------------------
+- All files in your project
+- Assets folder is main folder
+- Organize with folders
+- Drag assets to scene
+- Search functionality
+- Two-column or one-column view
+
+SLIDE 12: Inspector Window
+---------------------------
+- Shows selected object's properties
+- Edit component values
+- Add/remove components
+- Different for each object type
+- Context-sensitive
+- Most editing happens here
+
+SLIDE 13: Console Window
+-------------------------
+- Shows messages and errors
+- Debug.Log() outputs here
+- Red = Error (must fix)
+- Yellow = Warning (should check)
+- White = Info (normal)
+- Clear button to reset
+- Collapse similar messages
+
+SLIDE 14: Toolbar Overview
+---------------------------
+- Transform tools: Move, Rotate, Scale
+- Play/Pause/Step buttons
+- Cloud services
+- Account menu
+- Layers dropdown
+- Layout dropdown
+
+Shortcuts:
+- Q: Hand tool (pan)
+- W: Move
+- E: Rotate
+- R: Scale
+- T: Rect tool
+
+SLIDE 15: Navigation in Scene View
+-----------------------------------
+Essential Navigation:
+- Right-click + WASD: Fly camera (FPS style)
+- Alt + Left-click: Orbit around object
+- Alt + Right-click: Zoom in/out
+- Middle-mouse drag: Pan view
+- Scroll wheel: Zoom
+- F key: Focus on selected object
+- Double-click in Hierarchy: Focus object
+
+SLIDE 16: Navigation Practice
+------------------------------
+Try these exercises:
+1. Create a Cube (GameObject > 3D Object > Cube)
+2. Use F to focus on it
+3. Orbit around it with Alt + Left-click
+4. Zoom with scroll wheel
+5. Fly around with Right-click + WASD
+6. Pan with Middle-mouse
+
+SLIDE 17: Layouts
+------------------
+- Window > Layouts
+- Preset arrangements of windows
+- Default, 2 by 3, 4 Split, Tall, Wide
+- Save custom layouts
+- Reset if windows get messy
+
+Tip: Start with "Default" layout
+
+SLIDE 18: Project Settings Overview
+------------------------------------
+- Edit > Project Settings
+- Configure project-wide options
+- Player settings (name, icon)
+- Quality settings
+- Physics settings
+- Input settings
+- We'll explore these throughout the course
+
+SLIDE 19: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Install Unity Hub (if not done)
+2. Create new 3D URP project named "WallBreak3D"
+3. Explore all main windows
+4. Practice Scene view navigation
+5. Create a few 3D objects (Cube, Sphere)
+6. Select and inspect objects
+7. Check Console for any messages
+
+SLIDE 20: Best Practices
+-------------------------
+- Save your work frequently (Ctrl+S)
+- Organize project folders from start
+- Use meaningful names
+- Keep Console clear of errors
+- Learn keyboard shortcuts
+- Don't panic if something breaks!
+
+SLIDE 21: Common Beginner Mistakes
+-----------------------------------
+- Not saving the scene (Ctrl+S saves scene)
+- Not saving the project
+- Working in Game View instead of Scene View
+- Ignoring Console errors
+- Not organizing assets
+- Deleting important default objects
+
+SLIDE 22: Keyboard Shortcuts Reference
+---------------------------------------
+Navigation:
+- F: Focus selected
+- Alt + LMB: Orbit
+- Alt + RMB: Zoom
+- MMB: Pan
+
+Tools:
+- Q: Hand (pan)
+- W: Move
+- E: Rotate
+- R: Scale
+
+General:
+- Ctrl+S: Save
+- Ctrl+Z: Undo
+- Ctrl+D: Duplicate
+- Delete: Delete object
+
+SLIDE 23: Homework/Practice
+----------------------------
+- Spend 30 minutes exploring Unity interface
+- Practice all navigation methods
+- Create and delete various 3D objects
+- Try different layouts
+- Read Unity documentation: "Unity's Interface"
+- Watch: Unity Learn "Getting Started" videos
+
+SLIDE 24: Next Class Preview
+-----------------------------
+- GameObjects and Components
+- Transform component deep dive
+- Camera setup
+- Lighting basics
+- Creating our game scene
+- Understanding parent-child relationships
+
+SLIDE 25: Resources
+--------------------
+Official:
+- docs.unity3d.com (Documentation)
+- learn.unity.com (Tutorials)
+- forum.unity.com (Community)
+
+YouTube:
+- Brackeys (beginner-friendly)
+- Code Monkey
+- Unity official channel
+
+Questions?
+

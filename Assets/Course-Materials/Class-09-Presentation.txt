@@ -1,0 +1,481 @@
+CLASS 9: INPUT SYSTEM & MOUSE HANDLING
+=======================================
+
+SLIDE 1: Recap of Class 8
+--------------------------
+- Collider types (Box, Sphere, Capsule, Mesh)
+- Collision vs Trigger
+- OnCollisionEnter/OnTriggerEnter
+- Physics Materials
+- Friction and Bounciness
+- Ground collision detection
+
+SLIDE 2: User Input in Games
+-----------------------------
+- Input: How players interact
+- Types: Keyboard, mouse, gamepad, touch
+- Essential for interactivity
+- Unity has two input systems:
+  * Old Input Manager (legacy)
+  * New Input System (modern)
+
+We'll use the New Input System!
+
+SLIDE 3: Old vs New Input System
+---------------------------------
+Old Input Manager:
+- Simple but limited
+- Input.GetKey(), Input.GetMouseButton()
+- Hard-coded input bindings
+- Difficult to rebind
+
+New Input System:
+- More powerful and flexible
+- Action-based (abstract)
+- Easy rebinding
+- Multi-device support
+- Better for modern games
+
+SLIDE 4: Installing Input System
+---------------------------------
+Steps:
+1. Window > Package Manager
+2. Unity Registry (dropdown)
+3. Find "Input System"
+4. Click Install
+5. Unity may ask to restart
+6. Enable in Player Settings if prompted
+
+Both systems can coexist!
+
+SLIDE 5: Input System Concepts
+-------------------------------
+Key concepts:
+- Actions: What player wants to do
+- Bindings: Physical input for action
+- Action Maps: Groups of actions
+
+Example:
+- Action: "Fire"
+- Bindings: Left Mouse, Gamepad Right Trigger
+- Map: "Gameplay"
+
+SLIDE 6: Creating Input Actions (Code)
+---------------------------------------
+We'll create actions in code:
+```csharp
+using UnityEngine.InputSystem;
+
+private InputAction clickAction;
+
+void Awake()
+{
+    clickAction = new InputAction();
+    clickAction.AddBinding("<Mouse>/leftButton");
+}
+```
+
+Simple and direct for our needs!
+
+SLIDE 7: Input Action Lifecycle
+--------------------------------
+```csharp
+void Awake()
+{
+    // Create and configure
+    clickAction = new InputAction();
+    clickAction.AddBinding("<Mouse>/leftButton");
+    clickAction.performed += OnClick;  // Subscribe
+}
+
+void OnEnable()
+{
+    clickAction.Enable();  // Start listening
+}
+
+void OnDisable()
+{
+    clickAction.Disable();  // Stop listening
+}
+```
+
+SLIDE 8: Callback Context
+--------------------------
+```csharp
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
+
+void OnClick(CallbackContext context)
+{
+    // context.started - Button just pressed
+    // context.performed - Action completed
+    // context.canceled - Button released
+    
+    if (context.performed)
+    {
+        Debug.Log("Click performed!");
+    }
+}
+```
+
+SLIDE 9: Mouse Position
+------------------------
+Getting mouse position:
+```csharp
+using UnityEngine.InputSystem;
+
+void GetMousePosition()
+{
+    // Screen coordinates (pixels)
+    Vector2 mousePos = Mouse.current.position.ReadValue();
+    
+    Debug.Log($"Mouse at: {mousePos}");
+}
+```
+
+Screen coordinates:
+- (0,0) = Bottom-left
+- (Screen.width, Screen.height) = Top-right
+
+SLIDE 10: Mouse Buttons
+------------------------
+```csharp
+// Left button
+"<Mouse>/leftButton"
+
+// Right button
+"<Mouse>/rightButton"
+
+// Middle button
+"<Mouse>/middleButton"
+
+// Scroll wheel
+"<Mouse>/scroll"
+```
+
+SLIDE 11: Creating RayCastManager
+----------------------------------
+Our input handler script:
+```csharp
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
+
+public class RayCastManager : MonoBehaviour
+{
+    private Camera playerCamera;
+    private InputAction clickAction;
+    
+    void Start()
+    {
+        playerCamera = Camera.main;
+    }
+    
+    void Awake()
+    {
+        clickAction = new InputAction();
+        clickAction.AddBinding("<Mouse>/leftButton");
+        clickAction.performed += OnMouseClick;
+    }
+    
+    void OnEnable()
+    {
+        clickAction.Enable();
+    }
+    
+    void OnDisable()
+    {
+        clickAction.Disable();
+    }
+    
+    void OnMouseClick(CallbackContext ctx)
+    {
+        Debug.Log("Mouse clicked!");
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Debug.Log($"Position: {mousePos}");
+    }
+}
+```
+
+SLIDE 12: Input Delays
+-----------------------
+Prevent rapid clicking:
+```csharp
+private float lastClickTime;
+private float clickDelay = 0.2f;
+
+void OnMouseClick(CallbackContext ctx)
+{
+    if (Time.time - lastClickTime < clickDelay)
+        return;  // Too soon, ignore
+    
+    lastClickTime = Time.time;
+    
+    // Process click
+    ProcessClick();
+}
+```
+
+SLIDE 13: Keyboard Input
+-------------------------
+```csharp
+private InputAction pauseAction;
+
+void Awake()
+{
+    pauseAction = new InputAction();
+    pauseAction.AddBinding("<Keyboard>/escape");
+    pauseAction.AddBinding("<Keyboard>/p");
+    pauseAction.performed += OnPause;
+}
+
+void OnPause(CallbackContext ctx)
+{
+    Debug.Log("Pause pressed!");
+}
+```
+
+Multiple bindings for same action!
+
+SLIDE 14: Input Action Asset (Alternative)
+-------------------------------------------
+Visual editor approach:
+1. Create > Input Actions
+2. Double-click to open editor
+3. Create Action Maps
+4. Add Actions and Bindings
+5. Generate C# class
+
+More setup but more flexible.
+We'll stick with code approach.
+
+SLIDE 15: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Install Input System package
+2. Create RayCastManager script
+3. Set up click InputAction
+4. Subscribe to performed event
+5. Log mouse position on click
+6. Add click delay
+7. Create empty GameObject for manager
+8. Test clicking
+
+SLIDE 16: RayCastManager Setup
+-------------------------------
+In scene:
+1. Create empty GameObject: "Managers"
+2. Create child: "RayCastManager"
+3. Attach RayCastManager script
+4. Test in Play mode
+5. Click and watch Console
+
+SLIDE 17: Input System Settings
+--------------------------------
+Edit > Project Settings > Input System Package
+
+Options:
+- Update Mode: When to process
+- Background Behavior: When app unfocused
+- Default Button Press Point
+- Default Deadzone
+
+Usually defaults are fine.
+
+SLIDE 18: Handling Multiple Inputs
+-----------------------------------
+```csharp
+private InputAction moveAction;
+
+void Awake()
+{
+    moveAction = new InputAction();
+    moveAction.AddCompositeBinding("2DVector")
+        .With("Up", "<Keyboard>/w")
+        .With("Down", "<Keyboard>/s")
+        .With("Left", "<Keyboard>/a")
+        .With("Right", "<Keyboard>/d");
+}
+
+void Update()
+{
+    Vector2 movement = moveAction.ReadValue<Vector2>();
+}
+```
+
+SLIDE 19: Action Phases
+------------------------
+```csharp
+clickAction.started += ctx => Debug.Log("Started");
+clickAction.performed += ctx => Debug.Log("Performed");
+clickAction.canceled += ctx => Debug.Log("Canceled");
+```
+
+For button:
+- started: Button down
+- performed: Button down (same frame)
+- canceled: Button up
+
+SLIDE 20: Gamepad Support (Bonus)
+----------------------------------
+```csharp
+// Add gamepad binding
+clickAction.AddBinding("<Gamepad>/buttonSouth");  // A button
+
+// Check if gamepad connected
+if (Gamepad.current != null)
+{
+    Debug.Log("Gamepad connected!");
+}
+```
+
+Same action, multiple devices!
+
+SLIDE 21: Touch Input (Bonus)
+------------------------------
+```csharp
+// Touch binding
+clickAction.AddBinding("<Touchscreen>/primaryTouch/tap");
+
+// Get touch position
+if (Touchscreen.current != null)
+{
+    Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+}
+```
+
+SLIDE 22: Common Mistakes
+--------------------------
+- Forgetting to Enable action
+- Not subscribing to event
+- Wrong binding path syntax
+- Not disabling in OnDisable
+- Using old Input system methods
+- Forgetting using statements
+
+SLIDE 23: Debugging Input
+--------------------------
+```csharp
+void Awake()
+{
+    clickAction = new InputAction();
+    clickAction.AddBinding("<Mouse>/leftButton");
+    
+    // Debug: Log all phases
+    clickAction.started += ctx => Debug.Log("Started");
+    clickAction.performed += ctx => Debug.Log("Performed");
+    clickAction.canceled += ctx => Debug.Log("Canceled");
+}
+```
+
+Check Console for events firing.
+
+SLIDE 24: Input Best Practices
+-------------------------------
+- Create actions in Awake
+- Enable in OnEnable
+- Disable in OnDisable
+- Use meaningful action names
+- Add input delays for UX
+- Support multiple devices
+- Cache references
+
+SLIDE 25: Complete RayCastManager
+----------------------------------
+```csharp
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
+
+public class RayCastManager : MonoBehaviour
+{
+    [SerializeField] private float clickDelay = 0.2f;
+    
+    private Camera playerCamera;
+    private InputAction clickAction;
+    private float lastClickTime;
+    
+    void Start()
+    {
+        playerCamera = Camera.main;
+    }
+    
+    void Awake()
+    {
+        clickAction = new InputAction();
+        clickAction.AddBinding("<Mouse>/leftButton");
+        clickAction.performed += OnMouseClick;
+    }
+    
+    void OnEnable() => clickAction.Enable();
+    void OnDisable() => clickAction.Disable();
+    
+    void OnMouseClick(CallbackContext ctx)
+    {
+        if (Time.time - lastClickTime < clickDelay)
+            return;
+        
+        lastClickTime = Time.time;
+        
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Debug.Log($"Click at: {mousePos}");
+        
+        // Next class: Raycast from here!
+    }
+}
+```
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Add keyboard input (WASD, Space)
+- Implement pause with P or Escape
+- Try multiple bindings for one action
+- Add right-click action
+- Experiment with scroll wheel
+- Read: Unity Input System documentation
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Raycasting fundamentals
+- Camera.ScreenPointToRay
+- Physics.Raycast
+- Detecting clicked objects
+- IOption interface pattern
+- Connecting input to game objects
+
+SLIDE 28: Project Progress
+---------------------------
+We now have:
+- Scene with camera and lighting
+- Ground plane with material
+- Brick prefab with physics
+- Collision detection
+- Input system ready
+
+Next: Connecting clicks to bricks!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- New Input System is action-based
+- Create, Enable, Disable lifecycle
+- Subscribe to performed event
+- Mouse.current.position for position
+- Add delays for better UX
+- Support multiple input devices
+
+SLIDE 30: Input System Reference
+---------------------------------
+Common bindings:
+```
+<Mouse>/leftButton
+<Mouse>/rightButton
+<Keyboard>/space
+<Keyboard>/escape
+<Gamepad>/buttonSouth
+<Touchscreen>/primaryTouch/tap
+```
+
+Documentation:
+docs.unity3d.com/Packages/com.unity.inputsystem
+

@@ -1,0 +1,457 @@
+CLASS 19: AUDIO SYSTEM
+=======================
+
+SLIDE 1: Recap of Class 18
+---------------------------
+- TextMeshPro setup and usage
+- Button component and events
+- UIManager implementation
+- Panel switching
+- Connecting UI to game
+- Complete UI flow
+
+SLIDE 2: Why Audio Matters
+---------------------------
+Audio provides:
+- Feedback (hit sounds)
+- Atmosphere (music)
+- Immersion
+- Emotional impact
+- Information (warnings)
+
+Games without audio feel empty!
+
+SLIDE 3: Audio Components
+--------------------------
+AudioListener:
+- "Ears" of the game
+- Usually on Main Camera
+- Only ONE in scene
+
+AudioSource:
+- Plays audio clips
+- Multiple per scene
+- Attach to GameObjects
+
+AudioClip:
+- The actual sound file
+- Import audio files
+
+SLIDE 4: AudioListener
+-----------------------
+- Receives all audio
+- Attached to Main Camera (default)
+- Position affects 3D sound
+- Only one active at a time
+
+Check: Main Camera has AudioListener!
+
+SLIDE 5: AudioSource Component
+-------------------------------
+Key properties:
+- AudioClip: Sound to play
+- Output: Audio Mixer (optional)
+- Mute: Silence
+- Play On Awake: Auto-play
+- Loop: Repeat
+- Volume: 0-1
+- Pitch: Speed/tone
+- Spatial Blend: 2D vs 3D
+
+SLIDE 6: 2D vs 3D Audio
+------------------------
+2D Audio (Spatial Blend = 0):
+- Same volume everywhere
+- Good for: Music, UI sounds
+
+3D Audio (Spatial Blend = 1):
+- Volume based on distance
+- Directional
+- Good for: World sounds, footsteps
+
+SLIDE 7: Playing Audio
+-----------------------
+```csharp
+AudioSource audioSource;
+
+void Start()
+{
+    audioSource = GetComponent<AudioSource>();
+}
+
+// Play assigned clip
+audioSource.Play();
+
+// Play specific clip
+audioSource.PlayOneShot(clipToPlay);
+
+// Play at position (3D)
+AudioSource.PlayClipAtPoint(clip, position);
+```
+
+SLIDE 8: Play vs PlayOneShot
+-----------------------------
+Play():
+- Plays AudioSource's clip
+- Stops current sound
+- Use for: Music, looping
+
+PlayOneShot(clip):
+- Plays clip once
+- Overlaps with current
+- Use for: Sound effects
+
+SLIDE 9: Audio File Formats
+----------------------------
+Supported:
+- .mp3 - Compressed, common
+- .wav - Uncompressed, high quality
+- .ogg - Compressed, good quality
+- .aiff - Uncompressed
+
+Recommendations:
+- Music: .mp3 or .ogg
+- SFX: .wav for short sounds
+
+SLIDE 10: Import Settings
+--------------------------
+Select audio file in Project:
+- Load Type: Decompress on Load (small), Streaming (large)
+- Compression Format: Vorbis (quality), ADPCM (performance)
+- Sample Rate: Usually Auto
+- Force To Mono: For 3D sounds
+
+SLIDE 11: SoundManager Singleton
+---------------------------------
+```csharp
+public class SoundManager : MonoBehaviour
+{
+    public static SoundManager Instance { get; private set; }
+    
+    [Header("Audio Sources")]
+    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private AudioSource sfxSource;
+    
+    [Header("Music Clips")]
+    [SerializeField] private AudioClip menuMusic;
+    [SerializeField] private AudioClip gameplayMusic;
+    
+    [Header("SFX Clips")]
+    [SerializeField] private AudioClip brickHitSound;
+    [SerializeField] private AudioClip buttonClickSound;
+    [SerializeField] private AudioClip gameOverSound;
+    
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+SLIDE 12: Music Methods
+------------------------
+```csharp
+public void PlayMenuMusic()
+{
+    musicSource.clip = menuMusic;
+    musicSource.loop = true;
+    musicSource.Play();
+}
+
+public void PlayGameplayMusic()
+{
+    musicSource.clip = gameplayMusic;
+    musicSource.loop = true;
+    musicSource.Play();
+}
+
+public void StopMusic()
+{
+    musicSource.Stop();
+}
+```
+
+SLIDE 13: SFX Methods
+----------------------
+```csharp
+public void PlayBrickHit()
+{
+    sfxSource.PlayOneShot(brickHitSound);
+}
+
+public void PlayButtonClick()
+{
+    sfxSource.PlayOneShot(buttonClickSound);
+}
+
+public void PlayGameOver()
+{
+    sfxSource.PlayOneShot(gameOverSound);
+}
+```
+
+SLIDE 14: Volume Control
+-------------------------
+```csharp
+[Range(0f, 1f)]
+[SerializeField] private float musicVolume = 0.5f;
+
+[Range(0f, 1f)]
+[SerializeField] private float sfxVolume = 1f;
+
+public void SetMusicVolume(float volume)
+{
+    musicVolume = volume;
+    musicSource.volume = musicVolume;
+}
+
+public void SetSFXVolume(float volume)
+{
+    sfxVolume = volume;
+    sfxSource.volume = sfxVolume;
+}
+```
+
+SLIDE 15: Playing Sound on Events
+----------------------------------
+```csharp
+void OnEnable()
+{
+    Brick3D.OnAnyBrickDetached += OnBrickHit;
+}
+
+void OnDisable()
+{
+    Brick3D.OnAnyBrickDetached -= OnBrickHit;
+}
+
+void OnBrickHit(Brick3D brick)
+{
+    PlayBrickHit();
+}
+```
+
+SLIDE 16: Random Sound Variation
+---------------------------------
+```csharp
+[SerializeField] private AudioClip[] brickHitSounds;
+
+public void PlayBrickHit()
+{
+    if (brickHitSounds.Length > 0)
+    {
+        int index = Random.Range(0, brickHitSounds.Length);
+        sfxSource.PlayOneShot(brickHitSounds[index]);
+    }
+}
+```
+
+Variety prevents repetition fatigue!
+
+SLIDE 17: Pitch Variation
+--------------------------
+```csharp
+public void PlayBrickHitWithVariation()
+{
+    // Random pitch between 0.9 and 1.1
+    sfxSource.pitch = Random.Range(0.9f, 1.1f);
+    sfxSource.PlayOneShot(brickHitSound);
+    sfxSource.pitch = 1f;  // Reset
+}
+```
+
+Subtle variation feels natural!
+
+SLIDE 18: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create SoundManager GameObject
+2. Add two AudioSource components (music, SFX)
+3. Import audio files
+4. Implement SoundManager script
+5. Add music for menu/gameplay
+6. Add SFX for brick hit, buttons
+7. Connect to events
+8. Test all sounds
+
+SLIDE 19: Audio Setup Steps
+----------------------------
+1. Create empty: "SoundManager"
+2. Add AudioSource (Music):
+   - Loop: true
+   - Play On Awake: false
+   - Volume: 0.5
+3. Add AudioSource (SFX):
+   - Loop: false
+   - Play On Awake: false
+4. Attach SoundManager script
+5. Assign AudioSources
+6. Assign AudioClips
+
+SLIDE 20: Connecting to Game Flow
+----------------------------------
+```csharp
+// In GameManager
+public void StartGame(int seconds)
+{
+    SoundManager.Instance.PlayGameplayMusic();
+    // ...
+}
+
+void EndGame()
+{
+    SoundManager.Instance.StopMusic();
+    SoundManager.Instance.PlayGameOver();
+    // ...
+}
+
+// In UIManager
+public void OnButtonClicked()
+{
+    SoundManager.Instance.PlayButtonClick();
+    // ...
+}
+```
+
+SLIDE 21: Audio Mixer (Advanced)
+---------------------------------
+For more control:
+- Create Audio Mixer asset
+- Route AudioSources through it
+- Control groups (Music, SFX, Voice)
+- Add effects (reverb, EQ)
+- Snapshots for different states
+
+Optional for this course!
+
+SLIDE 22: Common Audio Issues
+------------------------------
+No sound:
+- Check AudioListener exists
+- Check AudioSource volume
+- Check clip is assigned
+- Check mute is off
+
+Sound too loud/quiet:
+- Adjust volume
+- Check import settings
+
+SLIDE 23: Audio Best Practices
+-------------------------------
+- Keep music and SFX separate
+- Use PlayOneShot for SFX
+- Add variation (pitch, multiple clips)
+- Don't spam sounds
+- Balance volumes
+- Test with headphones
+
+SLIDE 24: Our Audio Assets
+---------------------------
+SFX folder should have:
+- BackGround.mp3 (menu music)
+- GamePlay.mp3 (gameplay music)
+- brickHit 1.mp3
+- brickHit 2.mp3
+- Button.mp3
+- Gameover.mp3
+
+SLIDE 25: Complete SoundManager
+--------------------------------
+```csharp
+public class SoundManager : MonoBehaviour
+{
+    public static SoundManager Instance { get; private set; }
+    
+    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private AudioSource sfxSource;
+    
+    [SerializeField] private AudioClip menuMusic;
+    [SerializeField] private AudioClip gameplayMusic;
+    [SerializeField] private AudioClip[] brickHitSounds;
+    [SerializeField] private AudioClip buttonSound;
+    [SerializeField] private AudioClip gameOverSound;
+    
+    void Awake() { /* Singleton */ }
+    
+    void OnEnable()
+    {
+        Brick3D.OnAnyBrickDetached += (b) => PlayBrickHit();
+    }
+    
+    public void PlayMenuMusic() { }
+    public void PlayGameplayMusic() { }
+    public void PlayBrickHit() { }
+    public void PlayButtonClick() { }
+    public void PlayGameOver() { }
+}
+```
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Add all sound effects
+- Implement volume controls
+- Add sound variation
+- Test audio balance
+- Find/create additional sounds
+- Prepare for VFX (Class 20)
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Particle Systems
+- VFX prefabs
+- Instantiating effects
+- Impact effects
+- Celebration effects
+- Making the game feel alive!
+
+SLIDE 28: Audio Progress
+-------------------------
+Completed:
+- SoundManager singleton
+- Music system (menu, gameplay)
+- SFX system (brick, button, game over)
+- Event-driven audio
+- Volume control
+
+Game now has sound!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- AudioListener receives sound
+- AudioSource plays sound
+- Play() for music, PlayOneShot() for SFX
+- Singleton SoundManager
+- Event subscription for triggers
+- Variation prevents repetition
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Play music
+musicSource.clip = clip;
+musicSource.loop = true;
+musicSource.Play();
+
+// Play SFX
+sfxSource.PlayOneShot(clip);
+
+// Play at position
+AudioSource.PlayClipAtPoint(clip, position);
+
+// Volume
+audioSource.volume = 0.5f;
+
+// Pitch variation
+audioSource.pitch = Random.Range(0.9f, 1.1f);
+```
+
+

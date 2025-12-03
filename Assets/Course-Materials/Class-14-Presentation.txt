@@ -1,0 +1,484 @@
+CLASS 14: GAME MANAGEMENT & SINGLETON PATTERN
+==============================================
+
+SLIDE 1: Recap of Class 13
+---------------------------
+- Events and Delegates
+- Action and Func types
+- Subscribe/Unsubscribe pattern
+- Static events
+- Publisher-Subscriber architecture
+- WallManager with events
+
+SLIDE 2: What is a Game Manager?
+---------------------------------
+Central controller for game:
+- Manages game state
+- Coordinates systems
+- Handles game flow
+- Tracks score
+- Controls timing
+
+Think: Orchestra conductor
+
+SLIDE 3: Game States
+---------------------
+Common states:
+- MainMenu: Title screen
+- Playing: Active gameplay
+- Paused: Game frozen
+- GameOver: End screen
+
+Our game:
+- Menu → TimeSelect → Playing → GameOver
+
+SLIDE 4: State Management
+--------------------------
+```csharp
+public enum GameState
+{
+    Menu,
+    TimeSelect,
+    Playing,
+    Paused,
+    GameOver
+}
+
+private GameState currentState = GameState.Menu;
+
+void ChangeState(GameState newState)
+{
+    Debug.Log($"State: {currentState} → {newState}");
+    currentState = newState;
+}
+```
+
+SLIDE 5: The Singleton Pattern
+-------------------------------
+Design pattern ensuring:
+- Only ONE instance exists
+- Global access point
+- Persists across scenes (optional)
+
+Perfect for managers!
+
+SLIDE 6: Why Singleton?
+------------------------
+Benefits:
+- Easy access from anywhere
+- Guaranteed single instance
+- No need to find/reference
+- Centralized control
+
+Drawbacks:
+- Can be overused
+- Global state concerns
+- Testing challenges
+
+Use sparingly for managers!
+
+SLIDE 7: Implementing Singleton
+--------------------------------
+```csharp
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+    
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+SLIDE 8: Singleton Breakdown
+-----------------------------
+```csharp
+public static GameManager Instance { get; private set; }
+```
+- Static: Accessible without instance
+- Property: Controlled access
+- private set: Only this class sets it
+
+```csharp
+if (Instance == null)
+{
+    Instance = this;
+}
+else
+{
+    Destroy(gameObject);
+}
+```
+- First one becomes THE instance
+- Others destroy themselves
+
+SLIDE 9: DontDestroyOnLoad
+---------------------------
+```csharp
+DontDestroyOnLoad(gameObject);
+```
+
+- Object survives scene loading
+- Persists entire game session
+- Good for: Managers, music, player data
+
+Warning: Can cause duplicates if not careful!
+
+SLIDE 10: Accessing Singleton
+------------------------------
+```csharp
+// From any script, anywhere
+GameManager.Instance.StartGame();
+GameManager.Instance.AddScore(10);
+
+// Safe access
+if (GameManager.Instance != null)
+{
+    GameManager.Instance.DoSomething();
+}
+```
+
+SLIDE 11: Score System
+-----------------------
+```csharp
+public class GameManager : MonoBehaviour
+{
+    private int score = 0;
+    
+    public int Score => score;  // Read-only property
+    
+    public void AddScore(int points)
+    {
+        score += points;
+        OnScoreChanged?.Invoke(score);
+    }
+    
+    public void ResetScore()
+    {
+        score = 0;
+        OnScoreChanged?.Invoke(score);
+    }
+    
+    public event Action<int> OnScoreChanged;
+}
+```
+
+SLIDE 12: Connecting to Events
+-------------------------------
+```csharp
+void OnEnable()
+{
+    Brick3D.OnScoredPoints += AddScore;
+    Brick3D.OnAnyBrickDetached += OnBrickDetached;
+}
+
+void OnDisable()
+{
+    Brick3D.OnScoredPoints -= AddScore;
+    Brick3D.OnAnyBrickDetached -= OnBrickDetached;
+}
+
+void AddScore(int points)
+{
+    score += points;
+    // Update UI
+    if (uiManager != null)
+    {
+        uiManager.UpdateScore(score);
+    }
+}
+```
+
+SLIDE 13: Manager References
+-----------------------------
+```csharp
+public class GameManager : MonoBehaviour
+{
+    [Header("Manager References")]
+    [SerializeField] private WallManager wallManager;
+    [SerializeField] private UIManager uiManager;
+    [SerializeField] private SoundManager soundManager;
+    
+    // Or find them
+    void Start()
+    {
+        if (wallManager == null)
+            wallManager = FindObjectOfType<WallManager>();
+    }
+}
+```
+
+SLIDE 14: Game Flow Methods
+----------------------------
+```csharp
+public void StartGame(int timeInSeconds)
+{
+    ChangeState(GameState.Playing);
+    
+    score = 0;
+    uiManager.UpdateScore(score);
+    
+    wallManager.StartGame();
+    soundManager.PlayGameplayMusic();
+    
+    // Start timer (next class!)
+}
+
+public void EndGame()
+{
+    ChangeState(GameState.GameOver);
+    
+    wallManager.StopGame();
+    soundManager.PlayGameOverSound();
+    uiManager.ShowGameOver(score);
+}
+```
+
+SLIDE 15: Pause System
+-----------------------
+```csharp
+public void PauseGame()
+{
+    if (currentState != GameState.Playing) return;
+    
+    ChangeState(GameState.Paused);
+    Time.timeScale = 0f;  // Freeze time
+    uiManager.ShowPauseMenu();
+}
+
+public void ResumeGame()
+{
+    if (currentState != GameState.Paused) return;
+    
+    ChangeState(GameState.Playing);
+    Time.timeScale = 1f;  // Normal time
+    uiManager.HidePauseMenu();
+}
+```
+
+SLIDE 16: Time.timeScale
+-------------------------
+Controls game speed:
+- 1 = Normal speed
+- 0 = Paused (frozen)
+- 0.5 = Half speed (slow-mo)
+- 2 = Double speed
+
+```csharp
+Time.timeScale = 0f;  // Pause
+Time.timeScale = 1f;  // Resume
+```
+
+Note: UI animations may need unscaled time!
+
+SLIDE 17: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create GameManager script
+2. Implement singleton pattern
+3. Add score tracking
+4. Create game state enum
+5. Implement state changes
+6. Connect to brick events
+7. Add pause/resume
+8. Test game flow
+
+SLIDE 18: GameManager Structure
+--------------------------------
+```csharp
+public class GameManager : MonoBehaviour
+{
+    // Singleton
+    public static GameManager Instance { get; private set; }
+    
+    // References
+    [SerializeField] private WallManager wallManager;
+    [SerializeField] private UIManager uiManager;
+    
+    // State
+    private GameState currentState;
+    private int score;
+    
+    // Events
+    public event Action<int> OnScoreChanged;
+    public event Action<GameState> OnStateChanged;
+    
+    // Lifecycle
+    void Awake() { /* Singleton setup */ }
+    void OnEnable() { /* Subscribe */ }
+    void OnDisable() { /* Unsubscribe */ }
+    
+    // Public methods
+    public void StartGame(int time) { }
+    public void EndGame() { }
+    public void PauseGame() { }
+    public void ResumeGame() { }
+}
+```
+
+SLIDE 19: Scene Setup
+----------------------
+1. Create empty GameObject: "GameManager"
+2. Attach GameManager script
+3. Assign WallManager reference
+4. (UIManager comes later)
+5. Test singleton access
+6. Test state changes
+
+SLIDE 20: Debugging GameManager
+--------------------------------
+```csharp
+void ChangeState(GameState newState)
+{
+    Debug.Log($"[GameManager] State: {currentState} → {newState}");
+    currentState = newState;
+    OnStateChanged?.Invoke(newState);
+}
+
+void AddScore(int points)
+{
+    score += points;
+    Debug.Log($"[GameManager] Score: {score} (+{points})");
+    OnScoreChanged?.Invoke(score);
+}
+```
+
+SLIDE 21: Common Singleton Mistakes
+------------------------------------
+- Multiple GameObjects with script
+- Forgetting DontDestroyOnLoad
+- Not checking Instance == null
+- Accessing before Awake runs
+- Not destroying duplicates
+- Overusing singletons
+
+SLIDE 22: Alternative: Service Locator
+---------------------------------------
+If singleton feels wrong:
+```csharp
+public static class Services
+{
+    public static GameManager Game { get; set; }
+    public static SoundManager Sound { get; set; }
+    
+    public static void Initialize()
+    {
+        Game = FindObjectOfType<GameManager>();
+        Sound = FindObjectOfType<SoundManager>();
+    }
+}
+
+// Usage
+Services.Game.StartGame();
+```
+
+SLIDE 23: Manager Communication
+--------------------------------
+```
+GameManager (Singleton)
+├── Receives: Brick events
+├── Controls: WallManager, UIManager, SoundManager
+└── Broadcasts: Score, State changes
+
+Flow:
+Brick → Event → GameManager → Update UI
+                            → Update Sound
+                            → Check win/lose
+```
+
+SLIDE 24: Best Practices
+-------------------------
+- One GameManager per game
+- Keep it focused
+- Use events for notifications
+- Don't put everything in GameManager
+- Separate concerns (UI, Sound, etc.)
+- Test state transitions
+
+SLIDE 25: Homework/Practice
+----------------------------
+- Complete GameManager implementation
+- Add high score tracking
+- Implement difficulty levels
+- Create game settings
+- Test all state transitions
+- Read: Singleton pattern pros/cons
+
+SLIDE 26: Next Class Preview
+-----------------------------
+- Coroutines
+- IEnumerator and yield
+- WaitForSeconds
+- Timer implementation
+- Countdown system
+- Preparing for Midterm!
+
+SLIDE 27: Project Progress
+---------------------------
+Completed:
+- Physics system
+- Input/Raycasting
+- Wall generation
+- Event system
+- Game management
+
+One more class before Midterm:
+- Coroutines & Timer
+
+SLIDE 28: Midterm Checklist
+----------------------------
+For Midterm Sprint (Class 16):
+- [ ] Brick physics working
+- [ ] Click detection working
+- [ ] Wall generation working
+- [ ] Events connected
+- [ ] GameManager controlling flow
+- [ ] Timer counting down
+- [ ] Core game loop complete
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Singleton ensures one instance
+- GameManager coordinates systems
+- Game states track flow
+- Time.timeScale for pause
+- Events for communication
+- Keep managers focused
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Singleton setup
+public static GameManager Instance { get; private set; }
+
+void Awake()
+{
+    if (Instance == null)
+    {
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    else
+    {
+        Destroy(gameObject);
+    }
+}
+
+// Access
+GameManager.Instance.StartGame();
+
+// Pause
+Time.timeScale = 0f;  // Pause
+Time.timeScale = 1f;  // Resume
+```
+

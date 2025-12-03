@@ -1,0 +1,390 @@
+CLASS 7: PHYSICS SYSTEM I - RIGIDBODY
+======================================
+
+SLIDE 1: Recap of Class 6
+--------------------------
+- Methods with parameters and returns
+- Conditionals (if/else/switch)
+- Loops (for, while, foreach)
+- Arrays and Lists
+- Access modifiers
+- Code organization
+
+Part 1 Complete! Now entering Part 2: Physics & Input
+
+SLIDE 2: Unity Physics System
+------------------------------
+- Simulates real-world physics
+- Gravity, collisions, forces
+- Two physics engines:
+  * 3D: NVIDIA PhysX
+  * 2D: Box2D
+- Runs in FixedUpdate (fixed timestep)
+- Essential for interactive games
+
+SLIDE 3: What is a Rigidbody?
+------------------------------
+- Component that enables physics
+- Makes object affected by forces
+- Responds to gravity
+- Can collide with other objects
+- Required for physics simulation
+
+Without Rigidbody:
+- Object is static
+- No gravity, no forces
+- Only transform manipulation
+
+SLIDE 4: Adding Rigidbody
+--------------------------
+1. Select GameObject
+2. Add Component > Physics > Rigidbody
+3. Configure properties in Inspector
+
+Or via code:
+```csharp
+gameObject.AddComponent<Rigidbody>();
+```
+
+SLIDE 5: Rigidbody Properties
+------------------------------
+Key properties:
+- Mass: Weight of object (kg)
+- Drag: Air resistance
+- Angular Drag: Rotation resistance
+- Use Gravity: Affected by gravity?
+- Is Kinematic: Physics controlled?
+- Interpolate: Smooth movement
+- Collision Detection: Accuracy
+
+SLIDE 6: Mass
+--------------
+- How heavy the object is
+- Affects force interactions
+- Heavier = harder to move
+- Doesn't affect fall speed!
+- Unit: kilograms (kg)
+
+```csharp
+rb.mass = 50f;  // 50 kg
+```
+
+Tip: Keep mass realistic
+- Brick: 2-5 kg
+- Person: 70 kg
+- Car: 1500 kg
+
+SLIDE 7: Drag
+--------------
+- Air/fluid resistance
+- Slows down movement
+- 0 = No resistance
+- Higher = More resistance
+
+```csharp
+rb.drag = 0.5f;
+```
+
+Angular Drag:
+- Same but for rotation
+- Slows spinning
+
+SLIDE 8: Use Gravity
+---------------------
+- Should gravity affect this object?
+- Default: true
+- Gravity value: Physics Settings
+- Default: (0, -9.81, 0)
+
+```csharp
+rb.useGravity = true;
+rb.useGravity = false;  // Floats
+```
+
+SLIDE 9: Is Kinematic
+----------------------
+Very important property!
+
+Kinematic = true:
+- NOT affected by physics
+- Move only via Transform
+- Can still trigger collisions
+- Use for: Platforms, doors, animated objects
+
+Kinematic = false:
+- Fully physics-controlled
+- Responds to forces
+- Use for: Falling objects, projectiles
+
+SLIDE 10: Our Brick Setup
+--------------------------
+For WallBreak bricks:
+- Start as Kinematic (in wall)
+- Switch to Dynamic when hit
+- Then fall with physics
+
+```csharp
+// In wall (static)
+rb.isKinematic = true;
+
+// When hit (falls)
+rb.isKinematic = false;
+```
+
+SLIDE 11: Interpolation
+------------------------
+Smooths physics movement:
+- None: Raw physics (can be jerky)
+- Interpolate: Smooth based on previous
+- Extrapolate: Predict next position
+
+Use Interpolate for:
+- Player-controlled objects
+- Camera-followed objects
+- Visible moving objects
+
+SLIDE 12: Collision Detection
+------------------------------
+How accurately collisions detected:
+- Discrete: Default, fast
+- Continuous: Better for fast objects
+- Continuous Dynamic: Best, slowest
+- Continuous Speculative: Good balance
+
+Fast objects can "tunnel" through thin walls!
+Use Continuous for bullets, fast projectiles.
+
+SLIDE 13: Constraints
+----------------------
+Lock position or rotation:
+- Freeze Position X, Y, Z
+- Freeze Rotation X, Y, Z
+
+Use cases:
+- 2D game: Freeze Z position, X/Y rotation
+- No tipping: Freeze X/Z rotation
+- Rail movement: Freeze unwanted axes
+
+SLIDE 14: Accessing Rigidbody in Code
+--------------------------------------
+```csharp
+public class BrickPhysics : MonoBehaviour
+{
+    private Rigidbody rb;
+    
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void ReleaseBrick()
+    {
+        rb.isKinematic = false;
+        Debug.Log("Brick released!");
+    }
+}
+```
+
+SLIDE 15: GetComponent<T>()
+----------------------------
+Get reference to component:
+```csharp
+// Get Rigidbody on same object
+Rigidbody rb = GetComponent<Rigidbody>();
+
+// Check if exists
+if (rb != null)
+{
+    rb.mass = 10f;
+}
+
+// Get from other object
+Rigidbody otherRb = otherObject.GetComponent<Rigidbody>();
+```
+
+Cache in Awake() for performance!
+
+SLIDE 16: Physics Settings
+---------------------------
+Edit > Project Settings > Physics
+
+Key settings:
+- Gravity: Default (0, -9.81, 0)
+- Default Material: Friction/bounce
+- Sleep Threshold: When objects sleep
+- Solver Iterations: Accuracy
+
+Usually defaults are fine.
+
+SLIDE 17: FixedUpdate vs Update
+--------------------------------
+```csharp
+void Update()
+{
+    // Runs every frame (variable rate)
+    // Use for: Input, animation
+}
+
+void FixedUpdate()
+{
+    // Runs at fixed interval (default 0.02s = 50/sec)
+    // Use for: Physics operations
+}
+```
+
+Physics code should go in FixedUpdate!
+
+SLIDE 18: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Open Brick prefab
+2. Add Rigidbody component
+3. Set Mass: 50
+4. Enable Use Gravity
+5. Set Is Kinematic: true (initially)
+6. Create test script to toggle kinematic
+7. Test brick falling
+8. Experiment with mass and drag
+
+SLIDE 19: Test Script
+----------------------
+```csharp
+using UnityEngine;
+
+public class BrickPhysicsTest : MonoBehaviour
+{
+    private Rigidbody rb;
+    
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Update()
+    {
+        // Press Space to release brick
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.isKinematic = false;
+            Debug.Log("Brick released!");
+        }
+    }
+}
+```
+
+SLIDE 20: Testing Physics
+--------------------------
+1. Place brick above ground
+2. Enter Play mode
+3. Press Space
+4. Watch brick fall
+5. Try different mass values
+6. Try different drag values
+7. Observe behavior differences
+
+SLIDE 21: Rigidbody Best Practices
+-----------------------------------
+- Cache GetComponent in Awake()
+- Use FixedUpdate for physics
+- Don't modify Transform directly
+- Use forces instead of position
+- Set appropriate mass values
+- Use Kinematic for controlled objects
+
+SLIDE 22: Common Mistakes
+--------------------------
+- Forgetting Rigidbody component
+- Moving Rigidbody with Transform
+- Physics in Update (should be FixedUpdate)
+- Not caching component reference
+- Unrealistic mass values
+- Wrong collision detection mode
+
+SLIDE 23: Rigidbody vs Transform Movement
+------------------------------------------
+Wrong (jittery, breaks physics):
+```csharp
+transform.position += direction * speed;
+```
+
+Right (smooth, physics-aware):
+```csharp
+rb.MovePosition(rb.position + direction * speed);
+// Or
+rb.velocity = direction * speed;
+// Or
+rb.AddForce(direction * force);
+```
+
+SLIDE 24: Sleeping Rigidbodies
+-------------------------------
+- Objects "sleep" when stationary
+- Saves performance
+- Wake up on collision/force
+- Can manually wake:
+```csharp
+rb.WakeUp();
+rb.Sleep();
+```
+
+SLIDE 25: Debugging Physics
+----------------------------
+- Scene view: Show colliders (Gizmos)
+- Physics Debugger: Window > Analysis > Physics Debugger
+- Debug.Log velocity, position
+- Check Is Kinematic state
+- Verify Rigidbody exists
+
+```csharp
+Debug.Log($"Velocity: {rb.velocity}");
+Debug.Log($"Is Kinematic: {rb.isKinematic}");
+```
+
+SLIDE 26: Performance Tips
+---------------------------
+- Use Discrete collision when possible
+- Appropriate mass values
+- Let objects sleep
+- Don't have too many Rigidbodies
+- Use layers for collision filtering
+- Consider object pooling
+
+SLIDE 27: Homework/Practice
+----------------------------
+- Experiment with all Rigidbody properties
+- Create objects with different masses
+- Test drag effects
+- Create a simple "drop" game
+- Compare kinematic vs dynamic
+- Read: Unity Manual "Rigidbody"
+
+SLIDE 28: Next Class Preview
+-----------------------------
+- Colliders: Box, Sphere, Capsule, Mesh
+- Collision vs Trigger
+- OnCollisionEnter, OnTriggerEnter
+- Physics Materials
+- Ground collision detection
+
+SLIDE 29: Brick Prefab Status
+------------------------------
+Our Brick prefab now has:
+- Transform
+- Mesh Filter (Cube)
+- Mesh Renderer (Brick material)
+- Box Collider (auto-added)
+- Rigidbody (new!)
+  * Mass: 50
+  * Use Gravity: true
+  * Is Kinematic: true
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- Rigidbody enables physics
+- Mass affects force interactions
+- Kinematic = script-controlled
+- Dynamic = physics-controlled
+- Use FixedUpdate for physics
+- Cache component references
+

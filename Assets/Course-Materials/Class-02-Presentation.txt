@@ -1,0 +1,320 @@
+CLASS 2: GAMEOBJECTS, TRANSFORMS & SCENE SETUP
+===============================================
+
+SLIDE 1: Recap of Class 1
+--------------------------
+- Unity interface and windows
+- Scene View vs Game View
+- Hierarchy, Project, Inspector
+- Navigation in Scene View
+- Creating a new URP project
+- Basic keyboard shortcuts
+
+SLIDE 2: What is a GameObject?
+-------------------------------
+- Everything in Unity is a GameObject
+- Empty container by default
+- Holds Components that add functionality
+- Can be visible or invisible
+- Can have children (hierarchy)
+- Examples: Player, Enemy, Camera, Light, UI
+
+SLIDE 3: Components - Building Blocks
+--------------------------------------
+- Components add functionality to GameObjects
+- Each component does one thing
+- Combine components for complex behavior
+- Examples:
+  * Transform: Position, rotation, scale
+  * MeshRenderer: Makes object visible
+  * Collider: Physics collision
+  * Script: Custom behavior
+
+SLIDE 4: The Transform Component
+---------------------------------
+- EVERY GameObject has a Transform
+- Cannot be removed
+- Three properties:
+  * Position: Where in 3D space (X, Y, Z)
+  * Rotation: Orientation in degrees
+  * Scale: Size multiplier
+
+SLIDE 5: Understanding 3D Space
+--------------------------------
+- Three axes: X, Y, Z
+- X: Left/Right (Red)
+- Y: Up/Down (Green)
+- Z: Forward/Back (Blue)
+- Origin: (0, 0, 0)
+- Unity uses left-handed coordinate system
+
+SLIDE 6: Position
+------------------
+- Vector3: (X, Y, Z)
+- World space vs Local space
+- World: Absolute position in scene
+- Local: Relative to parent
+
+Examples:
+- (0, 0, 0): At origin
+- (5, 0, 0): 5 units right
+- (0, 10, 0): 10 units up
+- (0, 0, -5): 5 units back
+
+SLIDE 7: Rotation
+------------------
+- Euler angles: (X, Y, Z) in degrees
+- X: Pitch (tilt forward/back)
+- Y: Yaw (turn left/right)
+- Z: Roll (tilt sideways)
+- 360 degrees = full rotation
+- Quaternion used internally (don't worry about it yet)
+
+SLIDE 8: Scale
+---------------
+- Multiplier for size
+- (1, 1, 1): Original size
+- (2, 2, 2): Double size
+- (0.5, 0.5, 0.5): Half size
+- Can scale non-uniformly: (2, 1, 1)
+- Negative scale: Flips object
+
+SLIDE 9: Transform Tools
+-------------------------
+- W: Move tool (arrows)
+- E: Rotate tool (circles)
+- R: Scale tool (boxes)
+
+Tips:
+- Click and drag on axis to constrain
+- Hold Shift for snapping
+- Hold Ctrl for surface snapping
+- Center pivot vs Pivot point
+
+SLIDE 10: Parent-Child Relationships
+-------------------------------------
+- Drag object onto another in Hierarchy
+- Child inherits parent's transform
+- Moving parent moves children
+- Local position is relative to parent
+- Useful for grouping and organization
+
+Example:
+- Car (parent)
+  - Body
+  - Wheel1
+  - Wheel2
+
+SLIDE 11: Creating a Scene
+---------------------------
+- Scene = Level, Menu, or Game State
+- File > New Scene
+- File > Save Scene (Ctrl+S)
+- Save in Assets/Scenes folder
+- Name it "Gameplay"
+- One scene loaded at a time (usually)
+
+SLIDE 12: The Camera
+---------------------
+- Defines what player sees
+- Main Camera tag: Primary camera
+- Camera component properties:
+  * Clear Flags: Background type
+  * Background: Color when nothing visible
+  * Projection: Perspective (3D) or Orthographic (2D)
+  * Field of View: How wide (default 60)
+  * Clipping Planes: Near/Far render distance
+
+SLIDE 13: Camera Setup for Our Game
+------------------------------------
+Position the camera to see the wall:
+- Position: (-0.2, 1.97, -6.62)
+- Rotation: (-5, 0, 0)
+
+This gives us:
+- Slight downward angle
+- Good view of where wall will be
+- Room for UI at top
+
+SLIDE 14: Perspective vs Orthographic
+--------------------------------------
+Perspective:
+- Objects smaller when far
+- Realistic 3D look
+- Used for most 3D games
+- Our choice for WallBreak
+
+Orthographic:
+- No depth distortion
+- Used for 2D games
+- Technical/CAD views
+- Strategy games (sometimes)
+
+SLIDE 15: Directional Light
+----------------------------
+- Simulates sun/moon
+- Affects entire scene
+- Direction matters, position doesn't
+- Properties:
+  * Color: Light tint
+  * Intensity: Brightness
+  * Shadow Type: None, Soft, Hard
+
+SLIDE 16: Light Setup for Our Game
+-----------------------------------
+Directional Light settings:
+- Position: (0, 3, 0) - doesn't matter much
+- Rotation: (50, -30, 0) - this matters!
+- Color: Warm white
+- Intensity: 1
+- Shadows: Soft Shadows
+
+SLIDE 17: Other Light Types
+----------------------------
+Point Light:
+- Radiates in all directions
+- Like a light bulb
+- Has range/falloff
+
+Spot Light:
+- Cone of light
+- Like a flashlight
+- Angle and range
+
+Area Light:
+- Rectangle of light
+- Baked lighting only
+- Soft shadows
+
+SLIDE 18: Ambient Lighting
+---------------------------
+- Overall scene brightness
+- Window > Rendering > Lighting
+- Environment tab
+- Skybox or solid color
+- Affects mood significantly
+- URP handles this well
+
+SLIDE 19: Tags
+---------------
+- Labels for GameObjects
+- Used to identify objects in code
+- Built-in tags: Untagged, MainCamera, Player
+- Create custom tags
+- One tag per object
+- We'll use "Ground" tag later
+
+SLIDE 20: Layers
+-----------------
+- Organize objects for rendering/physics
+- Control what camera sees
+- Control physics interactions
+- Built-in layers: Default, UI, etc.
+- Create custom layers
+- Different from Tags!
+
+SLIDE 21: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create new scene "Gameplay"
+2. Set up Main Camera position and rotation
+3. Configure Directional Light
+4. Create empty GameObject "GameController"
+5. Practice Transform tools
+6. Create parent-child hierarchy test
+7. Save scene
+
+SLIDE 22: Scene Hierarchy Organization
+---------------------------------------
+Good practice:
+```
+Gameplay Scene
+├── Main Camera
+├── Directional Light
+├── GameController (empty - for scripts)
+├── Environment
+│   ├── Ground
+│   └── Walls
+├── UI
+│   └── Canvas
+└── Managers (empty - for manager scripts)
+```
+
+SLIDE 23: Inspector Tips
+-------------------------
+- Lock Inspector: Prevents selection change
+- Add Component button: Add new components
+- Reset: Right-click component header
+- Copy/Paste Component Values
+- Multi-select editing
+- Debug mode: Shows private variables
+
+SLIDE 24: Common Mistakes
+--------------------------
+- Camera at wrong position (can't see objects)
+- Light pointing wrong direction
+- Forgetting to save scene
+- Scale at 0 (object disappears)
+- Objects at same position (z-fighting)
+- Wrong parent-child setup
+
+SLIDE 25: Debugging Transform Issues
+-------------------------------------
+If object not visible:
+1. Check position (is it in camera view?)
+2. Check scale (is it 0?)
+3. Check if renderer is enabled
+4. Check layer (is camera rendering it?)
+5. Use F to focus on object
+6. Check Game View vs Scene View
+
+SLIDE 26: Transform in Code (Preview)
+--------------------------------------
+```csharp
+// Access transform
+transform.position = new Vector3(0, 5, 0);
+transform.rotation = Quaternion.Euler(0, 90, 0);
+transform.localScale = new Vector3(2, 2, 2);
+
+// Move relative
+transform.Translate(Vector3.forward * speed);
+transform.Rotate(0, 90, 0);
+```
+
+SLIDE 27: Best Practices
+-------------------------
+- Keep transforms clean (round numbers when possible)
+- Use empty GameObjects for organization
+- Name objects clearly
+- Set up scene hierarchy early
+- Save frequently
+- Use prefabs for reusable objects (next class!)
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create a simple scene with multiple objects
+- Practice all transform operations
+- Set up camera to view your objects
+- Experiment with different light settings
+- Create a parent-child hierarchy
+- Read: Unity Manual "Transforms"
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- 3D Primitives (Cube, Sphere, Plane, etc.)
+- Materials and colors
+- URP Lit shader
+- Creating ground plane
+- Textures basics
+- Building our game's foundation
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- GameObjects are containers
+- Components add functionality
+- Transform = Position + Rotation + Scale
+- Camera defines player view
+- Lights illuminate the scene
+- Organization is important!
+

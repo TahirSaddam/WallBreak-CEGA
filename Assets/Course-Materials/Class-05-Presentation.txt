@@ -1,0 +1,401 @@
+CLASS 5: INTRODUCTION TO C# SCRIPTING I
+========================================
+
+SLIDE 1: Recap of Class 4
+--------------------------
+- Prefabs: Reusable GameObject templates
+- Creating and editing prefabs
+- Prefab Mode and overrides
+- Project folder organization
+- Naming conventions
+- Brick prefab created
+
+SLIDE 2: What is Scripting?
+----------------------------
+- Code that controls game behavior
+- Makes things interactive
+- Responds to player input
+- Controls game logic
+- Unity uses C# (C-Sharp)
+- Scripts are Components!
+
+SLIDE 3: Why C#?
+-----------------
+- Industry standard language
+- Object-oriented programming
+- Strong typing (catches errors)
+- Great documentation
+- Used beyond games (web, apps)
+- Similar to Java, C++
+
+SLIDE 4: Creating Your First Script
+------------------------------------
+Method 1: Project window
+1. Right-click in Scripts folder
+2. Create > C# Script
+3. Name it immediately (important!)
+4. Double-click to open in editor
+
+Method 2: Add Component
+1. Select GameObject
+2. Add Component > New Script
+3. Name and create
+
+SLIDE 5: Script Naming Rules
+-----------------------------
+Important:
+- Must match class name exactly
+- PascalCase: "PlayerController"
+- No spaces or special characters
+- Start with letter, not number
+- Rename via Project window only
+
+Bad: "my script", "1stScript"
+Good: "MyScript", "FirstScript"
+
+SLIDE 6: Code Editor Setup
+---------------------------
+Recommended: Visual Studio or VS Code
+
+Setup:
+1. Edit > Preferences > External Tools
+2. Select your editor
+3. Click "Regenerate project files"
+
+Features:
+- Syntax highlighting
+- Auto-completion (IntelliSense)
+- Error detection
+- Documentation on hover
+
+SLIDE 7: Script Structure
+--------------------------
+```csharp
+using UnityEngine;
+
+public class MyScript : MonoBehaviour
+{
+    // Variables go here
+    
+    void Start()
+    {
+        // Called once at beginning
+    }
+    
+    void Update()
+    {
+        // Called every frame
+    }
+}
+```
+
+SLIDE 8: Understanding the Parts
+---------------------------------
+```csharp
+using UnityEngine;  // Import Unity features
+```
+- "using" imports namespaces
+- UnityEngine has all Unity classes
+
+```csharp
+public class MyScript : MonoBehaviour
+```
+- "public class" defines our script
+- ": MonoBehaviour" inherits Unity features
+- Class name MUST match filename
+
+SLIDE 9: MonoBehaviour
+-----------------------
+- Base class for Unity scripts
+- Provides lifecycle methods
+- Allows attaching to GameObjects
+- Access to transform, gameObject
+- Unity calls its methods automatically
+
+Without MonoBehaviour:
+- Can't attach to GameObject
+- No Start(), Update(), etc.
+
+SLIDE 10: Lifecycle Methods
+----------------------------
+Called by Unity automatically:
+
+Awake() - First, even if disabled
+Start() - Before first Update
+Update() - Every frame
+FixedUpdate() - Fixed time step (physics)
+LateUpdate() - After all Updates
+OnEnable() - When enabled
+OnDisable() - When disabled
+OnDestroy() - When destroyed
+
+SLIDE 11: Start() Method
+-------------------------
+```csharp
+void Start()
+{
+    Debug.Log("Game started!");
+}
+```
+
+- Called once when script starts
+- After Awake(), before first Update()
+- Good for: Initial setup, finding references
+- Only if GameObject is active
+
+SLIDE 12: Update() Method
+--------------------------
+```csharp
+void Update()
+{
+    // Runs every frame (60+ times/second)
+}
+```
+
+- Called every frame
+- Good for: Input, movement, checks
+- Frame rate dependent
+- Most common method you'll use
+
+SLIDE 13: Variables - Storing Data
+-----------------------------------
+Variables hold information:
+```csharp
+int score = 0;           // Whole numbers
+float speed = 5.5f;      // Decimal numbers
+string name = "Player";  // Text
+bool isAlive = true;     // True/False
+```
+
+Declare: type name = value;
+
+SLIDE 14: Common Data Types
+----------------------------
+```csharp
+int       // Whole numbers: 1, 42, -10
+float     // Decimals: 3.14f, -0.5f (need 'f')
+double    // Precise decimals (rarely used)
+bool      // true or false
+string    // Text: "Hello"
+char      // Single character: 'A'
+```
+
+SLIDE 15: Unity-Specific Types
+-------------------------------
+```csharp
+Vector3   // 3D point: (x, y, z)
+Vector2   // 2D point: (x, y)
+Color     // RGBA color
+GameObject// Reference to object
+Transform // Position, rotation, scale
+```
+
+Example:
+```csharp
+Vector3 position = new Vector3(0, 5, 0);
+```
+
+SLIDE 16: Public vs Private
+----------------------------
+```csharp
+public int score = 0;    // Visible in Inspector
+private int health = 100; // Hidden, internal only
+```
+
+Public:
+- Shows in Inspector
+- Accessible from other scripts
+- Use for configurable values
+
+Private:
+- Hidden from Inspector
+- Only this script can access
+- Use for internal data
+
+SLIDE 17: SerializeField
+-------------------------
+Best practice:
+```csharp
+[SerializeField] private int health = 100;
+```
+
+- Private but visible in Inspector
+- Keeps encapsulation
+- Preferred over public
+- Shows intent clearly
+
+SLIDE 18: Debug.Log()
+----------------------
+Your best friend for testing:
+```csharp
+Debug.Log("Hello World!");
+Debug.Log("Score: " + score);
+Debug.Log($"Player has {health} HP");
+
+Debug.LogWarning("This is a warning");
+Debug.LogError("This is an error!");
+```
+
+Output appears in Console window
+
+SLIDE 19: String Formatting
+----------------------------
+Combining text and variables:
+```csharp
+// Concatenation
+Debug.Log("Score: " + score);
+
+// String interpolation (preferred)
+Debug.Log($"Score: {score}");
+Debug.Log($"Position: {transform.position}");
+
+// Format method
+string msg = string.Format("HP: {0}", health);
+```
+
+SLIDE 20: Comments
+-------------------
+Explain your code:
+```csharp
+// Single line comment
+
+/* Multi-line
+   comment */
+
+/// <summary>
+/// XML documentation comment
+/// </summary>
+```
+
+Good comments explain WHY, not WHAT
+
+SLIDE 21: Attaching Scripts
+----------------------------
+Scripts must be attached to work:
+
+Method 1: Drag and drop
+- Drag script onto GameObject
+
+Method 2: Add Component
+- Select GameObject
+- Add Component > Scripts > YourScript
+
+Method 3: Inspector
+- Add Component button
+- Search for script name
+
+SLIDE 22: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create Scripts/3D folder
+2. Create "BrickTest.cs" script
+3. Add public and private variables
+4. Use Debug.Log in Start()
+5. Use Debug.Log in Update()
+6. Attach to Brick prefab
+7. Test in Play mode
+8. Watch Console output
+
+SLIDE 23: BrickTest Script
+---------------------------
+```csharp
+using UnityEngine;
+
+public class BrickTest : MonoBehaviour
+{
+    public Color brickColor = Color.red;
+    
+    [SerializeField] 
+    private int hitPoints = 3;
+    
+    void Start()
+    {
+        Debug.Log("Brick initialized!");
+        Debug.Log($"Position: {transform.position}");
+        Debug.Log($"HP: {hitPoints}");
+    }
+    
+    void Update()
+    {
+        // We'll add code here later
+    }
+}
+```
+
+SLIDE 24: Testing Your Script
+------------------------------
+1. Save script (Ctrl+S in editor)
+2. Return to Unity (auto-compiles)
+3. Check Console for errors
+4. Enter Play mode
+5. Watch Console output
+6. Modify public values in Inspector
+7. Test again
+
+SLIDE 25: Common Errors
+------------------------
+- "Script class cannot be found"
+  → Class name doesn't match filename
+
+- "Unexpected symbol"
+  → Missing semicolon or bracket
+
+- "does not contain definition"
+  → Typo in method/variable name
+
+- Pink error in Console
+  → Syntax error, check editor
+
+SLIDE 26: Debugging Tips
+-------------------------
+- Read error messages carefully
+- Line number tells you where
+- Google error messages
+- Check spelling and capitalization
+- Ensure all brackets match
+- Save and let Unity recompile
+
+SLIDE 27: Code Style
+---------------------
+Good habits:
+```csharp
+// Consistent indentation
+// Meaningful variable names
+// Comments for complex logic
+// One statement per line
+// Blank lines for readability
+```
+
+Bad:
+```csharp
+int x=5;float y=3.0f;if(x>y){Debug.Log("yes");}
+```
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create 3 different test scripts
+- Experiment with all data types
+- Practice Debug.Log with formatting
+- Try different lifecycle methods
+- Intentionally create errors, then fix them
+- Read: Unity Manual "Scripting"
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- Methods and functions
+- Conditionals (if/else)
+- Loops (for, while)
+- Access modifiers deep dive
+- Operators
+- Building logic for our game
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- Scripts are Components
+- MonoBehaviour is the base class
+- Start() runs once, Update() every frame
+- Variables store data
+- Public shows in Inspector
+- Debug.Log() for testing
+

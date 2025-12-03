@@ -1,0 +1,519 @@
+CLASS 13: EVENTS & DELEGATES
+=============================
+
+SLIDE 1: Recap of Class 12
+---------------------------
+- Procedural generation concepts
+- Nested loops for grids
+- Position calculation
+- Instantiate for spawning
+- WallGenerator3D implementation
+- Parent organization
+
+SLIDE 2: The Communication Problem
+-----------------------------------
+How do objects talk to each other?
+
+Bad approach:
+```csharp
+// Brick needs reference to EVERYTHING
+gameManager.AddScore(10);
+uiManager.UpdateScore();
+soundManager.PlaySound();
+effectsManager.SpawnEffect();
+```
+
+Tight coupling = Bad!
+
+SLIDE 3: What are Events?
+--------------------------
+- Notification system
+- "Something happened!"
+- Objects subscribe to listen
+- Publisher doesn't know subscribers
+- Loose coupling = Good!
+
+Real world: Newsletter subscription
+- Publisher sends newsletter
+- Doesn't know who reads it
+- Subscribers get notified
+
+SLIDE 4: What are Delegates?
+-----------------------------
+- Type-safe function pointers
+- Variable that holds method reference
+- Can call method through delegate
+- Foundation for events
+
+```csharp
+// Delegate type definition
+delegate void MyDelegate(int value);
+
+// Variable of that type
+MyDelegate myMethod;
+
+// Assign method
+myMethod = SomeMethod;
+
+// Call through delegate
+myMethod(42);
+```
+
+SLIDE 5: Action Delegate
+-------------------------
+Built-in delegate for methods returning void:
+```csharp
+using System;
+
+// No parameters
+Action onComplete;
+
+// With parameters
+Action<int> onScoreChanged;
+Action<int, string> onPlayerDied;
+
+// Assign
+onComplete = MyMethod;
+onScoreChanged = HandleScore;
+
+// Call
+onComplete?.Invoke();
+onScoreChanged?.Invoke(100);
+```
+
+SLIDE 6: Func Delegate
+-----------------------
+Built-in delegate with return value:
+```csharp
+using System;
+
+// Returns int, no parameters
+Func<int> getScore;
+
+// Returns bool, takes int parameter
+Func<int, bool> isValidScore;
+
+// Last type is always return type
+Func<int, int, int> addNumbers;  // (int, int) -> int
+```
+
+We'll mostly use Action!
+
+SLIDE 7: Events
+----------------
+Events are special delegates:
+```csharp
+// Declare event
+public event Action OnBrickDestroyed;
+
+// Only owner can invoke
+OnBrickDestroyed?.Invoke();
+
+// Others can subscribe/unsubscribe
+brick.OnBrickDestroyed += HandleDestroyed;
+brick.OnBrickDestroyed -= HandleDestroyed;
+```
+
+Events = Restricted delegates
+
+SLIDE 8: Static Events
+-----------------------
+Accessible without instance:
+```csharp
+public class Brick3D : MonoBehaviour
+{
+    // Static event - class level
+    public static event Action<Brick3D> OnAnyBrickDetached;
+    
+    void DetachBrick()
+    {
+        // Invoke static event
+        OnAnyBrickDetached?.Invoke(this);
+    }
+}
+
+// Subscribe from anywhere
+Brick3D.OnAnyBrickDetached += HandleBrickDetached;
+```
+
+SLIDE 9: Subscribe Pattern
+---------------------------
+```csharp
+public class ScoreManager : MonoBehaviour
+{
+    void OnEnable()
+    {
+        // Subscribe when enabled
+        Brick3D.OnAnyBrickDetached += AddScore;
+    }
+    
+    void OnDisable()
+    {
+        // Unsubscribe when disabled
+        Brick3D.OnAnyBrickDetached -= AddScore;
+    }
+    
+    void AddScore(Brick3D brick)
+    {
+        score += 10;
+    }
+}
+```
+
+SLIDE 10: Why OnEnable/OnDisable?
+----------------------------------
+Important pattern:
+- OnEnable: Object becomes active
+- OnDisable: Object becomes inactive
+
+Why unsubscribe?
+- Prevents memory leaks
+- Prevents null reference errors
+- Prevents calling destroyed objects
+- Clean lifecycle management
+
+SLIDE 11: Null-Conditional Invoke
+----------------------------------
+```csharp
+// Old way (verbose)
+if (OnBrickDetached != null)
+{
+    OnBrickDetached.Invoke(this);
+}
+
+// New way (clean)
+OnBrickDetached?.Invoke(this);
+```
+
+?. = Only call if not null
+
+SLIDE 12: Event Parameters
+---------------------------
+Pass data with events:
+```csharp
+// Event with brick reference
+public static event Action<Brick3D> OnBrickDetached;
+
+// Event with score value
+public static event Action<int> OnScorePoints;
+
+// Event with multiple parameters
+public static event Action<Vector3, int> OnBrickDestroyed;
+
+// Invoke with data
+OnBrickDetached?.Invoke(this);
+OnScorePoints?.Invoke(10);
+OnBrickDestroyed?.Invoke(transform.position, 10);
+```
+
+SLIDE 13: Brick Events
+-----------------------
+```csharp
+public class Brick3D : MonoBehaviour, IOption
+{
+    // Events
+    public static event Action<Brick3D> OnAnyBrickDetached;
+    public static event Action<int> OnScoredPoints;
+    
+    [SerializeField] private int pointValue = 10;
+    
+    public void OnClicked(Vector3 impactPoint)
+    {
+        DetachBrick(impactPoint);
+        
+        // Fire events
+        OnAnyBrickDetached?.Invoke(this);
+        OnScoredPoints?.Invoke(pointValue);
+    }
+}
+```
+
+SLIDE 14: WallManager Events
+-----------------------------
+```csharp
+public class WallManager : MonoBehaviour
+{
+    private int remainingBricks;
+    
+    void OnEnable()
+    {
+        Brick3D.OnAnyBrickDetached += OnBrickDetached;
+    }
+    
+    void OnDisable()
+    {
+        Brick3D.OnAnyBrickDetached -= OnBrickDetached;
+    }
+    
+    void OnBrickDetached(Brick3D brick)
+    {
+        remainingBricks--;
+        Debug.Log($"Bricks remaining: {remainingBricks}");
+        
+        if (remainingBricks <= 0)
+        {
+            OnWallCleared();
+        }
+    }
+    
+    void OnWallCleared()
+    {
+        Debug.Log("Wall cleared! Spawning next...");
+    }
+}
+```
+
+SLIDE 15: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Add events to Brick3D
+2. Create WallManager script
+3. Subscribe to brick events
+4. Track remaining bricks
+5. Detect wall cleared
+6. Test event flow
+7. Debug with logs
+
+SLIDE 16: Event Flow Diagram
+-----------------------------
+```
+Player clicks brick
+       ↓
+Brick3D.OnClicked()
+       ↓
+OnAnyBrickDetached?.Invoke(this)
+       ↓
+WallManager.OnBrickDetached()
+       ↓
+remainingBricks--
+       ↓
+if (remainingBricks <= 0)
+       ↓
+SpawnNextWall()
+```
+
+SLIDE 17: Multiple Subscribers
+-------------------------------
+Many objects can listen:
+```csharp
+// All subscribe to same event
+Brick3D.OnAnyBrickDetached += wallManager.OnBrickDetached;
+Brick3D.OnAnyBrickDetached += scoreManager.AddScore;
+Brick3D.OnAnyBrickDetached += soundManager.PlayHitSound;
+Brick3D.OnAnyBrickDetached += effectsManager.SpawnEffect;
+
+// When event fires, ALL are called!
+```
+
+Decoupled but connected!
+
+SLIDE 18: Event Best Practices
+-------------------------------
+- Always unsubscribe in OnDisable
+- Use null-conditional (?.)
+- Keep events focused (single purpose)
+- Use meaningful names
+- Document event parameters
+- Static events for global notifications
+
+SLIDE 19: Common Event Mistakes
+--------------------------------
+- Forgetting to unsubscribe
+- Subscribing multiple times
+- Calling events on destroyed objects
+- Wrong parameter types
+- Not checking for null
+- Circular event dependencies
+
+SLIDE 20: Debugging Events
+---------------------------
+```csharp
+// Log when event fires
+public static event Action<Brick3D> OnAnyBrickDetached;
+
+void DetachBrick()
+{
+    Debug.Log($"Firing OnAnyBrickDetached for {name}");
+    OnAnyBrickDetached?.Invoke(this);
+}
+
+// Log when receiving
+void OnBrickDetached(Brick3D brick)
+{
+    Debug.Log($"Received event from {brick.name}");
+}
+```
+
+SLIDE 21: Lambda Expressions
+-----------------------------
+Inline event handlers:
+```csharp
+// Instead of separate method
+Brick3D.OnScoredPoints += (points) => 
+{
+    score += points;
+    Debug.Log($"Score: {score}");
+};
+
+// Simple one-liner
+Brick3D.OnScoredPoints += (points) => score += points;
+```
+
+Warning: Hard to unsubscribe!
+
+SLIDE 22: Custom EventArgs (Advanced)
+--------------------------------------
+For complex data:
+```csharp
+public class BrickEventArgs
+{
+    public Brick3D Brick { get; set; }
+    public Vector3 Position { get; set; }
+    public int Points { get; set; }
+}
+
+public static event Action<BrickEventArgs> OnBrickEvent;
+
+// Invoke
+OnBrickEvent?.Invoke(new BrickEventArgs 
+{
+    Brick = this,
+    Position = transform.position,
+    Points = pointValue
+});
+```
+
+SLIDE 23: WallManager Complete
+-------------------------------
+```csharp
+public class WallManager : MonoBehaviour
+{
+    [SerializeField] private WallGenerator3D wallGenerator;
+    
+    private int remainingBricks;
+    private int currentWallIndex = 0;
+    
+    void OnEnable()
+    {
+        Brick3D.OnAnyBrickDetached += OnBrickDetached;
+    }
+    
+    void OnDisable()
+    {
+        Brick3D.OnAnyBrickDetached -= OnBrickDetached;
+    }
+    
+    public void StartGame()
+    {
+        currentWallIndex = 0;
+        SpawnNewWall();
+    }
+    
+    void OnBrickDetached(Brick3D brick)
+    {
+        remainingBricks--;
+        
+        if (remainingBricks <= 0)
+        {
+            currentWallIndex++;
+            SpawnNewWall();
+        }
+    }
+    
+    void SpawnNewWall()
+    {
+        wallGenerator.GenerateWall();
+        remainingBricks = wallGenerator.GetBrickCount();
+    }
+}
+```
+
+SLIDE 24: Publisher-Subscriber Summary
+---------------------------------------
+Publisher (Brick3D):
+- Declares event
+- Invokes when something happens
+- Doesn't know who's listening
+
+Subscriber (WallManager, ScoreManager, etc.):
+- Subscribes in OnEnable
+- Unsubscribes in OnDisable
+- Reacts to events
+
+SLIDE 25: Homework/Practice
+----------------------------
+- Add more events to Brick3D
+- Create event for ground collision
+- Implement chain reaction event
+- Practice lambda expressions
+- Create custom EventArgs
+- Read: C# Events documentation
+
+SLIDE 26: Next Class Preview
+-----------------------------
+- Game Management
+- Singleton pattern
+- GameManager implementation
+- Game states
+- Score tracking
+- Connecting all systems
+
+SLIDE 27: Event Architecture
+-----------------------------
+Our event flow:
+```
+Brick3D
+├── OnAnyBrickDetached → WallManager, Effects
+├── OnScoredPoints → GameManager, UI
+└── OnGroundHit → SoundManager, Effects
+
+WallManager
+└── OnWallCleared → GameManager, Camera
+
+GameManager
+├── OnGameStarted → UI, Sound
+└── OnGameEnded → UI, Sound
+```
+
+SLIDE 28: Project Progress
+---------------------------
+Completed:
+- Brick prefab with physics
+- Click detection and forces
+- Wall generation
+- Event system
+
+Coming up:
+- Game management
+- Coroutines/Timer
+- Midterm sprint!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Events enable loose coupling
+- Action<T> for parameterized events
+- Subscribe in OnEnable
+- Unsubscribe in OnDisable
+- Use ?. for null safety
+- Static events for global access
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Declare event
+public static event Action<int> OnScoreChanged;
+
+// Invoke event
+OnScoreChanged?.Invoke(points);
+
+// Subscribe
+void OnEnable() => Brick3D.OnScoreChanged += HandleScore;
+
+// Unsubscribe
+void OnDisable() => Brick3D.OnScoreChanged -= HandleScore;
+
+// Handler
+void HandleScore(int points) { score += points; }
+```
+

@@ -1,0 +1,520 @@
+CLASS 6: INTRODUCTION TO C# SCRIPTING II
+=========================================
+
+SLIDE 1: Recap of Class 5
+--------------------------
+- Creating C# scripts
+- MonoBehaviour and lifecycle
+- Start() and Update()
+- Variables and data types
+- Public vs Private
+- Debug.Log() for testing
+- Attaching scripts to GameObjects
+
+SLIDE 2: Methods (Functions)
+-----------------------------
+Methods are reusable blocks of code:
+```csharp
+void SayHello()
+{
+    Debug.Log("Hello!");
+}
+
+// Call it
+SayHello();
+```
+
+Parts:
+- Return type (void = nothing)
+- Name (SayHello)
+- Parameters (empty here)
+- Body (code inside {})
+
+SLIDE 3: Methods with Parameters
+---------------------------------
+Pass data into methods:
+```csharp
+void Greet(string name)
+{
+    Debug.Log($"Hello, {name}!");
+}
+
+// Call with argument
+Greet("Player");  // Output: Hello, Player!
+```
+
+Multiple parameters:
+```csharp
+void AddScore(int points, bool bonus)
+{
+    // Use points and bonus
+}
+```
+
+SLIDE 4: Methods with Return Values
+------------------------------------
+Get data back from methods:
+```csharp
+int Add(int a, int b)
+{
+    return a + b;
+}
+
+// Use the returned value
+int result = Add(5, 3);  // result = 8
+```
+
+Return type must match returned value!
+
+SLIDE 5: Void vs Return Types
+------------------------------
+```csharp
+// void - does something, returns nothing
+void PrintMessage(string msg)
+{
+    Debug.Log(msg);
+}
+
+// int - returns a number
+int GetScore()
+{
+    return score;
+}
+
+// bool - returns true/false
+bool IsAlive()
+{
+    return health > 0;
+}
+```
+
+SLIDE 6: Operators
+-------------------
+Arithmetic:
+```csharp
++  // Add
+-  // Subtract
+*  // Multiply
+/  // Divide
+%  // Modulo (remainder)
+```
+
+Example:
+```csharp
+int result = 10 + 5;   // 15
+int half = 10 / 2;     // 5
+int remainder = 10 % 3; // 1
+```
+
+SLIDE 7: Comparison Operators
+------------------------------
+Compare values (return bool):
+```csharp
+==  // Equal to
+!=  // Not equal to
+>   // Greater than
+<   // Less than
+>=  // Greater or equal
+<=  // Less or equal
+```
+
+Example:
+```csharp
+bool isEqual = (5 == 5);    // true
+bool isGreater = (10 > 5);  // true
+```
+
+SLIDE 8: Logical Operators
+---------------------------
+Combine conditions:
+```csharp
+&&  // AND - both must be true
+||  // OR - at least one true
+!   // NOT - inverts boolean
+```
+
+Example:
+```csharp
+bool canPlay = (hasTicket && isOldEnough);
+bool hasAccess = (isAdmin || isOwner);
+bool isInvisible = !isVisible;
+```
+
+SLIDE 9: Conditionals - if Statement
+-------------------------------------
+Make decisions:
+```csharp
+if (health <= 0)
+{
+    Debug.Log("Game Over!");
+}
+```
+
+Structure:
+- if (condition)
+- Condition must be boolean (true/false)
+- Code in {} runs if true
+
+SLIDE 10: if-else Statement
+----------------------------
+Two paths:
+```csharp
+if (score >= 100)
+{
+    Debug.Log("You win!");
+}
+else
+{
+    Debug.Log("Keep trying!");
+}
+```
+
+Either one block runs, never both
+
+SLIDE 11: else if - Multiple Conditions
+----------------------------------------
+```csharp
+if (score >= 100)
+{
+    Debug.Log("Gold medal!");
+}
+else if (score >= 50)
+{
+    Debug.Log("Silver medal!");
+}
+else if (score >= 25)
+{
+    Debug.Log("Bronze medal!");
+}
+else
+{
+    Debug.Log("Try again!");
+}
+```
+
+SLIDE 12: Switch Statement
+---------------------------
+Multiple specific values:
+```csharp
+switch (level)
+{
+    case 1:
+        Debug.Log("Easy");
+        break;
+    case 2:
+        Debug.Log("Medium");
+        break;
+    case 3:
+        Debug.Log("Hard");
+        break;
+    default:
+        Debug.Log("Unknown");
+        break;
+}
+```
+
+SLIDE 13: Loops - for Loop
+---------------------------
+Repeat a specific number of times:
+```csharp
+for (int i = 0; i < 10; i++)
+{
+    Debug.Log($"Count: {i}");
+}
+// Outputs 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+```
+
+Parts:
+- int i = 0: Start value
+- i < 10: Continue condition
+- i++: Increment after each loop
+
+SLIDE 14: Loops - while Loop
+-----------------------------
+Repeat while condition is true:
+```csharp
+int count = 0;
+while (count < 5)
+{
+    Debug.Log($"Count: {count}");
+    count++;
+}
+```
+
+Warning: Infinite loop if condition never false!
+
+SLIDE 15: Loops - foreach Loop
+-------------------------------
+Iterate through collections:
+```csharp
+string[] names = {"Alice", "Bob", "Charlie"};
+
+foreach (string name in names)
+{
+    Debug.Log($"Hello, {name}!");
+}
+```
+
+Cleaner than for loop for collections
+
+SLIDE 16: Arrays
+-----------------
+Store multiple values:
+```csharp
+// Declare and initialize
+int[] scores = new int[5];  // 5 empty slots
+int[] numbers = {1, 2, 3, 4, 5};  // With values
+
+// Access by index (starts at 0!)
+int first = numbers[0];  // 1
+int third = numbers[2];  // 3
+
+// Set value
+scores[0] = 100;
+
+// Length
+int count = numbers.Length;  // 5
+```
+
+SLIDE 17: Lists
+----------------
+Dynamic arrays (can grow/shrink):
+```csharp
+using System.Collections.Generic;
+
+List<int> scores = new List<int>();
+
+// Add items
+scores.Add(100);
+scores.Add(85);
+
+// Access
+int first = scores[0];
+
+// Remove
+scores.Remove(85);
+scores.RemoveAt(0);
+
+// Count
+int count = scores.Count;
+```
+
+SLIDE 18: Access Modifiers Deep Dive
+-------------------------------------
+```csharp
+public    // Accessible from anywhere
+private   // Only this class (default)
+protected // This class and children
+internal  // Same assembly only
+```
+
+Best practice:
+- Default to private
+- Only make public what's needed
+- Use [SerializeField] for Inspector
+
+SLIDE 19: Properties (Getters/Setters)
+---------------------------------------
+Control access to variables:
+```csharp
+private int _health = 100;
+
+public int Health
+{
+    get { return _health; }
+    set 
+    { 
+        _health = Mathf.Clamp(value, 0, 100);
+    }
+}
+
+// Use like variable
+player.Health = 150;  // Actually sets to 100
+```
+
+SLIDE 20: Auto-Properties
+--------------------------
+Shorthand:
+```csharp
+// Full auto-property
+public int Score { get; set; }
+
+// Read-only (set only in class)
+public int Health { get; private set; }
+
+// With default value
+public string Name { get; set; } = "Player";
+```
+
+SLIDE 21: Increment/Decrement
+------------------------------
+```csharp
+int x = 5;
+
+x++;     // x = 6 (increment by 1)
+x--;     // x = 5 (decrement by 1)
+
+x += 10; // x = 15 (add 10)
+x -= 5;  // x = 10 (subtract 5)
+x *= 2;  // x = 20 (multiply by 2)
+x /= 4;  // x = 5 (divide by 4)
+```
+
+SLIDE 22: Practical Example
+----------------------------
+```csharp
+public class BrickLogic : MonoBehaviour
+{
+    [SerializeField] private int hitPoints = 3;
+    
+    public void TakeDamage(int damage)
+    {
+        hitPoints -= damage;
+        
+        if (hitPoints <= 0)
+        {
+            DestroyBrick();
+        }
+        else
+        {
+            Debug.Log($"HP remaining: {hitPoints}");
+        }
+    }
+    
+    private void DestroyBrick()
+    {
+        Debug.Log("Brick destroyed!");
+        Destroy(gameObject);
+    }
+}
+```
+
+SLIDE 23: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create methods with parameters
+2. Create methods with return values
+3. Implement if/else logic
+4. Use a for loop to log numbers
+5. Create an array of colors
+6. Practice with operators
+7. Build a simple scoring method
+
+SLIDE 24: Exercise: Score Calculator
+-------------------------------------
+```csharp
+public class ScoreCalculator : MonoBehaviour
+{
+    private int totalScore = 0;
+    
+    void Start()
+    {
+        AddPoints(10);
+        AddPoints(25);
+        AddPoints(5);
+        
+        Debug.Log($"Final Score: {totalScore}");
+        Debug.Log($"Grade: {GetGrade(totalScore)}");
+    }
+    
+    void AddPoints(int points)
+    {
+        totalScore += points;
+        Debug.Log($"Added {points}, Total: {totalScore}");
+    }
+    
+    string GetGrade(int score)
+    {
+        if (score >= 35) return "A";
+        else if (score >= 25) return "B";
+        else if (score >= 15) return "C";
+        else return "D";
+    }
+}
+```
+
+SLIDE 25: Common Mistakes
+--------------------------
+- Forgetting break in switch
+- Off-by-one errors in loops
+- Using = instead of == in conditions
+- Infinite loops
+- Array index out of bounds
+- Forgetting to increment loop variable
+
+SLIDE 26: Debugging Logic
+--------------------------
+```csharp
+// Add Debug.Log to trace execution
+void ProcessScore(int points)
+{
+    Debug.Log($"Processing {points} points");
+    
+    if (points > 0)
+    {
+        Debug.Log("Points are positive");
+        score += points;
+    }
+    
+    Debug.Log($"Score is now: {score}");
+}
+```
+
+SLIDE 27: Code Organization Tips
+---------------------------------
+```csharp
+public class WellOrganized : MonoBehaviour
+{
+    // 1. Serialized fields
+    [SerializeField] private int maxHealth = 100;
+    
+    // 2. Private variables
+    private int currentHealth;
+    
+    // 3. Unity lifecycle methods
+    void Start() { }
+    void Update() { }
+    
+    // 4. Public methods
+    public void TakeDamage(int amount) { }
+    
+    // 5. Private methods
+    private void Die() { }
+}
+```
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create a countdown timer using Update
+- Build a number guessing game (console)
+- Practice loops: print patterns
+- Create array operations (sum, average)
+- Implement a simple state system
+- Read: C# documentation on control flow
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- Physics System: Rigidbody
+- Mass, Gravity, Kinematic
+- Making objects fall
+- Physics simulation
+- Preparing bricks for interaction
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- Methods organize reusable code
+- Conditionals make decisions
+- Loops repeat code
+- Arrays/Lists store collections
+- Access modifiers control visibility
+- Good organization = readable code
+
+Part 1 Complete! You now have:
+- Unity basics
+- Scene setup
+- Materials and prefabs
+- C# fundamentals
+
+Next: Physics and interactivity!
+

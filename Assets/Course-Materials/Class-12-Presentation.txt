@@ -1,0 +1,500 @@
+CLASS 12: PROCEDURAL GENERATION - WALL GENERATOR
+=================================================
+
+SLIDE 1: Recap of Class 11
+---------------------------
+- AddForce and ForceMode
+- Directional impact forces
+- AddTorque for rotation
+- Physics.OverlapSphere
+- Chain reaction effects
+- Tuning physics for game feel
+
+Now entering Part 3: Midterm Build-up!
+
+SLIDE 2: What is Procedural Generation?
+----------------------------------------
+- Creating content algorithmically
+- Not hand-placed, but generated
+- Can create infinite variations
+- Used for: Levels, terrain, items, enemies
+
+Our use: Generate brick walls!
+
+SLIDE 3: Why Procedural Generation?
+------------------------------------
+Benefits:
+- Replayability (different each time)
+- Less manual work
+- Scalable content
+- Dynamic difficulty
+- Smaller file size
+
+For our game:
+- Multiple walls
+- Different patterns
+- Progressive difficulty
+
+SLIDE 4: Grid-Based Generation
+-------------------------------
+Our wall is a grid:
+- Rows: Vertical count
+- Columns: Horizontal count
+- Each cell: One brick
+
+```
+[B][B][B][B][B]  <- Row 2
+[B][B][B][B][B]  <- Row 1
+[B][B][B][B][B]  <- Row 0
+```
+
+SLIDE 5: Nested Loops
+----------------------
+Generate grid with nested loops:
+```csharp
+for (int row = 0; row < rows; row++)
+{
+    for (int col = 0; col < columns; col++)
+    {
+        // Create brick at (col, row)
+        SpawnBrick(col, row);
+    }
+}
+```
+
+Outer loop: Rows (Y)
+Inner loop: Columns (X)
+
+SLIDE 6: Position Calculation
+------------------------------
+Convert grid position to world position:
+```csharp
+void SpawnBrick(int col, int row)
+{
+    float x = col * (brickWidth + spacing);
+    float y = row * (brickHeight + spacing);
+    float z = 0;
+    
+    Vector3 position = new Vector3(x, y, z);
+    
+    Instantiate(brickPrefab, position, Quaternion.identity);
+}
+```
+
+SLIDE 7: Brick Dimensions
+--------------------------
+Our brick prefab:
+- Scale: (2, 1, 1)
+- Width: 2 units
+- Height: 1 unit
+- Depth: 1 unit
+
+With spacing:
+- brickWidth = 2f
+- brickHeight = 1f
+- spacing = 0.05f (small gap)
+
+SLIDE 8: Centering the Wall
+----------------------------
+Center wall on X axis:
+```csharp
+float wallWidth = columns * (brickWidth + spacing);
+float offsetX = -wallWidth / 2f + brickWidth / 2f;
+
+Vector3 position = new Vector3(
+    col * (brickWidth + spacing) + offsetX,
+    row * (brickHeight + spacing),
+    0
+);
+```
+
+SLIDE 9: Parent Organization
+-----------------------------
+Keep hierarchy clean:
+```csharp
+public class WallGenerator3D : MonoBehaviour
+{
+    void GenerateWall()
+    {
+        // Create parent for this wall
+        GameObject wallParent = new GameObject("Wall");
+        
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                GameObject brick = Instantiate(brickPrefab, position, rotation);
+                brick.transform.parent = wallParent.transform;
+            }
+        }
+    }
+}
+```
+
+SLIDE 10: Instantiate
+----------------------
+Spawn prefab at runtime:
+```csharp
+// Basic
+GameObject obj = Instantiate(prefab);
+
+// With position and rotation
+GameObject obj = Instantiate(prefab, position, rotation);
+
+// With parent
+GameObject obj = Instantiate(prefab, position, rotation, parent);
+```
+
+Returns reference to new object!
+
+SLIDE 11: WallGenerator3D Script
+---------------------------------
+```csharp
+using UnityEngine;
+
+public class WallGenerator3D : MonoBehaviour
+{
+    [Header("Wall Settings")]
+    [SerializeField] private GameObject brickPrefab;
+    [SerializeField] private int rows = 8;
+    [SerializeField] private int columns = 12;
+    
+    [Header("Brick Settings")]
+    [SerializeField] private float brickWidth = 2f;
+    [SerializeField] private float brickHeight = 1f;
+    [SerializeField] private float spacing = 0.05f;
+    
+    void Start()
+    {
+        GenerateWall();
+    }
+    
+    // ... continued
+}
+```
+
+SLIDE 12: GenerateWall Method
+------------------------------
+```csharp
+public void GenerateWall()
+{
+    // Calculate offset to center wall
+    float wallWidth = columns * (brickWidth + spacing);
+    float offsetX = -wallWidth / 2f + brickWidth / 2f;
+    
+    // Create parent object
+    GameObject wallParent = new GameObject("Wall");
+    wallParent.transform.position = transform.position;
+    
+    // Generate grid
+    for (int row = 0; row < rows; row++)
+    {
+        for (int col = 0; col < columns; col++)
+        {
+            SpawnBrick(col, row, offsetX, wallParent.transform);
+        }
+    }
+}
+```
+
+SLIDE 13: SpawnBrick Method
+----------------------------
+```csharp
+void SpawnBrick(int col, int row, float offsetX, Transform parent)
+{
+    // Calculate position
+    float x = col * (brickWidth + spacing) + offsetX;
+    float y = row * (brickHeight + spacing);
+    float z = transform.position.z;
+    
+    Vector3 position = new Vector3(x, y, z);
+    
+    // Spawn brick
+    GameObject brick = Instantiate(
+        brickPrefab, 
+        position, 
+        Quaternion.identity, 
+        parent
+    );
+    
+    brick.name = $"Brick_{col}_{row}";
+}
+```
+
+SLIDE 14: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create WallGenerator3D script
+2. Add serialized fields for settings
+3. Implement GenerateWall method
+4. Implement SpawnBrick method
+5. Create WallGenerator GameObject
+6. Assign brick prefab
+7. Test wall generation
+8. Adjust rows/columns
+
+SLIDE 15: Scene Setup
+----------------------
+1. Create empty GameObject: "WallGenerator"
+2. Position at (0, 0, 0)
+3. Attach WallGenerator3D script
+4. Drag Brick prefab to field
+5. Set rows: 8
+6. Set columns: 12
+7. Enter Play mode
+8. See wall appear!
+
+SLIDE 16: Tracking Bricks
+--------------------------
+Store references for later:
+```csharp
+private List<Brick3D> allBricks = new List<Brick3D>();
+
+void SpawnBrick(...)
+{
+    GameObject brick = Instantiate(...);
+    
+    Brick3D brickScript = brick.GetComponent<Brick3D>();
+    if (brickScript != null)
+    {
+        allBricks.Add(brickScript);
+    }
+}
+
+public int GetRemainingBricks()
+{
+    return allBricks.Count;
+}
+```
+
+SLIDE 17: Clearing Walls
+-------------------------
+Remove old wall before new:
+```csharp
+private GameObject currentWall;
+
+public void GenerateWall()
+{
+    // Destroy old wall
+    if (currentWall != null)
+    {
+        Destroy(currentWall);
+    }
+    
+    allBricks.Clear();
+    
+    // Create new wall
+    currentWall = new GameObject("Wall");
+    // ... rest of generation
+}
+```
+
+SLIDE 18: Wall Patterns (Preview)
+----------------------------------
+Different arrangements:
+```csharp
+bool ShouldSpawnBrick(int col, int row)
+{
+    // Normal: All bricks
+    return true;
+    
+    // Checkerboard
+    return (col + row) % 2 == 0;
+    
+    // Pyramid
+    return col >= (columns - row) / 2 && 
+           col < columns - (columns - row) / 2;
+}
+```
+
+We'll expand this later!
+
+SLIDE 19: Random Variations
+----------------------------
+Add randomness:
+```csharp
+void SpawnBrick(...)
+{
+    // Random color variation
+    Color randomColor = new Color(
+        Random.Range(0.8f, 1f),
+        Random.Range(0.3f, 0.5f),
+        Random.Range(0.2f, 0.4f)
+    );
+    
+    // Random slight rotation
+    Quaternion rotation = Quaternion.Euler(
+        0, 0, Random.Range(-2f, 2f)
+    );
+}
+```
+
+SLIDE 20: Vertical Bricks
+--------------------------
+Some bricks rotated 90°:
+```csharp
+void SpawnBrick(int col, int row, ...)
+{
+    bool isVertical = Random.value < 0.1f; // 10% chance
+    
+    Quaternion rotation = isVertical 
+        ? Quaternion.Euler(0, 0, 90) 
+        : Quaternion.identity;
+    
+    // Vertical brick takes 2 rows
+    if (isVertical && row < rows - 1)
+    {
+        // Mark next row position as occupied
+    }
+}
+```
+
+SLIDE 21: Debugging Generation
+-------------------------------
+```csharp
+void GenerateWall()
+{
+    Debug.Log($"Generating {rows}x{columns} wall");
+    Debug.Log($"Total bricks: {rows * columns}");
+    
+    // ... generation code
+    
+    Debug.Log($"Wall generated with {allBricks.Count} bricks");
+}
+
+void OnDrawGizmos()
+{
+    // Visualize wall bounds
+    Gizmos.color = Color.yellow;
+    float width = columns * (brickWidth + spacing);
+    float height = rows * (brickHeight + spacing);
+    Gizmos.DrawWireCube(transform.position + new Vector3(0, height/2, 0), 
+                        new Vector3(width, height, 1));
+}
+```
+
+SLIDE 22: Common Mistakes
+--------------------------
+- Wrong position calculation
+- Forgetting offset for centering
+- Not parenting bricks
+- Prefab not assigned
+- Bricks spawning inside each other
+- Performance with too many bricks
+
+SLIDE 23: Performance Tips
+---------------------------
+- Don't spawn too many bricks (100-200 max)
+- Use object pooling for respawning
+- Disable bricks instead of destroy
+- Consider LOD for distant walls
+- Profile if slow
+
+SLIDE 24: Complete WallGenerator3D
+-----------------------------------
+```csharp
+using UnityEngine;
+using System.Collections.Generic;
+
+public class WallGenerator3D : MonoBehaviour
+{
+    [Header("Wall Settings")]
+    [SerializeField] private GameObject brickPrefab;
+    [SerializeField] private int rows = 8;
+    [SerializeField] private int columns = 12;
+    
+    [Header("Brick Settings")]
+    [SerializeField] private float brickWidth = 2f;
+    [SerializeField] private float brickHeight = 1f;
+    [SerializeField] private float spacing = 0.05f;
+    
+    private GameObject currentWall;
+    private List<Brick3D> allBricks = new List<Brick3D>();
+    
+    void Start()
+    {
+        GenerateWall();
+    }
+    
+    // ... methods from previous slides
+}
+```
+
+SLIDE 25: Homework/Practice
+----------------------------
+- Experiment with different row/column counts
+- Implement checkerboard pattern
+- Add random color to bricks
+- Create pyramid wall shape
+- Try vertical brick variation
+- Read about object pooling
+
+SLIDE 26: Next Class Preview
+-----------------------------
+- Events and Delegates
+- C# event system
+- Action and Func
+- Subscribe/Unsubscribe pattern
+- Decoupled communication
+- Brick events for scoring
+
+SLIDE 27: Project Progress
+---------------------------
+We now have:
+- Brick prefab with physics
+- Click detection and forces
+- Procedural wall generation
+
+Still needed:
+- Event system
+- Game management
+- UI
+- Audio
+- Effects
+
+SLIDE 28: Midterm Approaching!
+-------------------------------
+Class 16 is Midterm Sprint!
+
+By then you'll have:
+- Complete wall generation
+- Event-driven architecture
+- Game manager
+- Timer system
+- Core game loop working
+
+4 classes to prepare!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Nested loops for grid generation
+- Calculate positions mathematically
+- Instantiate spawns prefabs
+- Parent objects for organization
+- Track spawned objects in list
+- Clear before regenerating
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Nested loop for grid
+for (int row = 0; row < rows; row++)
+{
+    for (int col = 0; col < columns; col++)
+    {
+        // Spawn at (col, row)
+    }
+}
+
+// Instantiate
+Instantiate(prefab, position, rotation, parent);
+
+// Center offset
+float offset = -totalWidth / 2f + itemWidth / 2f;
+
+// Position calculation
+float x = col * (width + spacing) + offset;
+float y = row * (height + spacing);
+```
+

@@ -1,0 +1,346 @@
+CLASS 17: UI SYSTEM I - CANVAS & LAYOUT
+========================================
+
+SLIDE 1: Welcome to Part 4!
+----------------------------
+Part 4: Polish & Complete Game
+
+Midterm complete! Now we add:
+- UI System (Classes 17-18)
+- Audio System (Class 19)
+- Visual Effects (Classes 20-21)
+- Animation (Class 22)
+- Advanced Features (Class 23)
+- Final Sprint (Class 24)
+
+SLIDE 2: Why UI Matters
+------------------------
+User Interface:
+- Shows game information
+- Provides player feedback
+- Enables navigation
+- Creates immersion
+- Essential for playability
+
+No UI = Confused players!
+
+SLIDE 3: Unity UI System (uGUI)
+--------------------------------
+Unity's built-in UI:
+- Canvas-based system
+- RectTransform for positioning
+- Event System for interaction
+- Supports all platforms
+- Flexible and powerful
+
+Alternative: UI Toolkit (newer, different)
+
+SLIDE 4: Canvas
+----------------
+- Container for all UI elements
+- Required for any UI
+- Defines render space
+- Has Canvas component
+- Auto-creates EventSystem
+
+Create: GameObject > UI > Canvas
+
+SLIDE 5: Canvas Render Modes
+-----------------------------
+Screen Space - Overlay:
+- UI on top of everything
+- Always faces camera
+- Most common for HUD
+
+Screen Space - Camera:
+- Rendered by specific camera
+- Can have 3D objects in front
+
+World Space:
+- UI in 3D world
+- For in-game screens, health bars
+
+SLIDE 6: Canvas Scaler
+-----------------------
+How UI scales with screen size:
+
+Constant Pixel Size:
+- Fixed pixel size
+- May be too small/large on different screens
+
+Scale With Screen Size:
+- Scales based on reference resolution
+- Best for most games!
+
+Constant Physical Size:
+- Based on physical units (DPI)
+
+SLIDE 7: Canvas Scaler Settings
+--------------------------------
+For "Scale With Screen Size":
+```
+Reference Resolution: 1920 x 1080
+Screen Match Mode: Match Width Or Height
+Match: 0.5 (balance between width/height)
+```
+
+UI looks consistent across resolutions!
+
+SLIDE 8: RectTransform
+-----------------------
+UI version of Transform:
+- Position (anchored)
+- Size (width, height)
+- Anchors (relative positioning)
+- Pivot (rotation/scale center)
+
+More complex than Transform!
+
+SLIDE 9: Anchors
+-----------------
+Define how element positions relative to parent:
+- Top-left, Top-center, Top-right
+- Middle-left, Center, Middle-right
+- Bottom-left, Bottom-center, Bottom-right
+- Stretch modes
+
+Anchor presets: Click anchor icon in Inspector
+
+SLIDE 10: Anchor Examples
+--------------------------
+Score in top-left:
+- Anchor: Top-left
+- Position from corner
+
+Timer in top-center:
+- Anchor: Top-center
+- Centered horizontally
+
+Health bar stretching:
+- Anchor: Stretch horizontal
+- Width adjusts with screen
+
+SLIDE 11: Pivot Point
+----------------------
+- Center of rotation/scaling
+- Affects position meaning
+- (0,0) = bottom-left
+- (0.5, 0.5) = center
+- (1,1) = top-right
+
+Usually keep at center (0.5, 0.5)
+
+SLIDE 12: UI Elements
+----------------------
+Basic elements:
+- Panel: Container/background
+- Image: Display sprites
+- Text (TextMeshPro): Display text
+- Button: Clickable
+- Slider: Value selection
+- Toggle: On/off switch
+- Input Field: Text input
+
+SLIDE 13: Panel
+----------------
+- Container for other UI
+- Often has Image component
+- Used for backgrounds
+- Grouping related elements
+
+Create: Right-click Canvas > UI > Panel
+
+SLIDE 14: Image
+----------------
+- Displays sprites
+- Source Image: Sprite to show
+- Color: Tint
+- Image Type: Simple, Sliced, Tiled, Filled
+- Raycast Target: Can be clicked?
+
+SLIDE 15: Image Types
+----------------------
+Simple:
+- Stretches entire image
+
+Sliced (9-slice):
+- Corners stay fixed
+- Edges stretch
+- Great for panels!
+
+Filled:
+- Partial fill (health bars)
+- Radial or horizontal
+
+SLIDE 16: Creating UI Panels
+-----------------------------
+Our game needs:
+1. MainMenuPanel
+2. TimeSelectPanel
+3. GameplayPanel (HUD)
+4. PausePanel
+5. GameOverPanel
+
+Each shows at different game state!
+
+SLIDE 17: Panel Structure
+--------------------------
+```
+Canvas
+├── MainMenuPanel
+│   ├── TitleText
+│   ├── PlayButton
+│   └── QuitButton
+├── GameplayPanel
+│   ├── ScoreText
+│   └── TimerText
+├── PausePanel
+│   ├── PausedText
+│   └── ResumeButton
+└── GameOverPanel
+    ├── GameOverText
+    ├── FinalScoreText
+    └── PlayAgainButton
+```
+
+SLIDE 18: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create Canvas with proper settings
+2. Set Canvas Scaler for 1920x1080
+3. Create MainMenuPanel
+4. Create GameplayPanel (HUD)
+5. Create PausePanel
+6. Create GameOverPanel
+7. Practice anchor positioning
+8. Test at different resolutions
+
+SLIDE 19: Canvas Setup Steps
+-----------------------------
+1. GameObject > UI > Canvas
+2. Select Canvas
+3. Canvas Scaler component:
+   - UI Scale Mode: Scale With Screen Size
+   - Reference Resolution: 1920 x 1080
+   - Match: 0.5
+4. Verify EventSystem created
+
+SLIDE 20: MainMenuPanel Setup
+------------------------------
+1. Right-click Canvas > UI > Panel
+2. Rename to "MainMenuPanel"
+3. Anchor: Stretch (all corners)
+4. Set background color/image
+5. Add child elements:
+   - Title text (top area)
+   - Play button (center)
+   - Quit button (below play)
+
+SLIDE 21: GameplayPanel (HUD) Setup
+------------------------------------
+1. Create Panel: "GameplayPanel"
+2. Make background transparent
+3. Add ScoreText:
+   - Anchor: Top-left
+   - Position: (100, -50)
+4. Add TimerText:
+   - Anchor: Top-center
+   - Position: (0, -50)
+
+SLIDE 22: Layout Components
+----------------------------
+Auto-arrange children:
+
+Horizontal Layout Group:
+- Arrange in row
+
+Vertical Layout Group:
+- Arrange in column
+
+Grid Layout Group:
+- Arrange in grid
+
+Add to parent Panel!
+
+SLIDE 23: Layout Group Settings
+--------------------------------
+```
+Padding: Space from edges
+Spacing: Space between elements
+Child Alignment: Where to align
+Child Force Expand: Stretch to fill
+Control Child Size: Auto-size children
+```
+
+SLIDE 24: Content Size Fitter
+------------------------------
+Auto-size based on content:
+```
+Horizontal Fit: 
+- Unconstrained
+- Min Size
+- Preferred Size
+
+Vertical Fit:
+- Same options
+```
+
+Great for text that varies!
+
+SLIDE 25: Testing Different Resolutions
+----------------------------------------
+1. Game view > Resolution dropdown
+2. Add custom resolutions
+3. Test common sizes:
+   - 1920x1080 (Full HD)
+   - 1280x720 (HD)
+   - 2560x1440 (QHD)
+   - Mobile resolutions
+4. Verify UI scales correctly
+
+SLIDE 26: UI Best Practices
+----------------------------
+- Use anchors for responsive design
+- Group related elements in panels
+- Use layout groups when possible
+- Test multiple resolutions
+- Keep hierarchy organized
+- Name elements clearly
+
+SLIDE 27: Common UI Mistakes
+-----------------------------
+- Wrong anchor settings
+- Hardcoded positions
+- Not testing resolutions
+- Forgetting EventSystem
+- Raycast Target on decorative images
+- Too many nested layouts
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create all game panels
+- Add placeholder text/images
+- Test at 3+ resolutions
+- Experiment with layout groups
+- Design visually appealing UI
+- Prepare for TextMeshPro (Class 18)
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- TextMeshPro for beautiful text
+- Button setup and events
+- Panel management script
+- UIManager implementation
+- Connecting UI to game
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- Canvas is UI container
+- Use Scale With Screen Size
+- Anchors for responsive positioning
+- Panels group related elements
+- Layout groups auto-arrange
+- Test multiple resolutions
+
+

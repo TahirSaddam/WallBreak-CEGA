@@ -1,0 +1,465 @@
+CLASS 18: UI SYSTEM II - TEXTMESHPRO & BUTTONS
+===============================================
+
+SLIDE 1: Recap of Class 17
+---------------------------
+- Canvas and render modes
+- Canvas Scaler for responsiveness
+- RectTransform and anchors
+- Panels for organization
+- Layout groups
+- Created UI structure
+
+SLIDE 2: What is TextMeshPro?
+------------------------------
+- Advanced text rendering
+- Better quality than legacy Text
+- More styling options
+- Better performance
+- Industry standard
+- Free and built into Unity
+
+SLIDE 3: Installing TextMeshPro
+--------------------------------
+First time setup:
+1. Window > TextMeshPro > Import TMP Essential Resources
+2. Click Import
+3. Creates TextMesh Pro folder
+4. Includes fonts and materials
+
+Only need to do once per project!
+
+SLIDE 4: TMP vs Legacy Text
+----------------------------
+Legacy Text:
+- Basic rendering
+- Limited styling
+- Blurry at large sizes
+
+TextMeshPro:
+- Signed Distance Field (SDF)
+- Crisp at any size
+- Rich text support
+- Outlines, shadows, glow
+
+SLIDE 5: Creating TMP Text
+---------------------------
+In Canvas:
+1. Right-click > UI > Text - TextMeshPro
+2. First time: Import TMP Essentials
+3. Configure in Inspector
+
+Or via code:
+```csharp
+using TMPro;
+TMP_Text myText;
+```
+
+SLIDE 6: TMP_Text Properties
+-----------------------------
+Key properties:
+- Text: The string to display
+- Font Asset: Which font
+- Font Size: Text size
+- Color: Text color
+- Alignment: Left, center, right
+- Overflow: How to handle long text
+
+SLIDE 7: Font Styling
+----------------------
+```
+Font Style:
+- Bold
+- Italic
+- Underline
+- Strikethrough
+- Lowercase/Uppercase
+- Small Caps
+```
+
+Combine styles!
+
+SLIDE 8: Rich Text Tags
+------------------------
+Inline formatting:
+```
+<b>Bold</b>
+<i>Italic</i>
+<size=24>Size</size>
+<color=red>Red</color>
+<color=#FF0000>Hex color</color>
+Score: <b>{score}</b>
+```
+
+Enable "Rich Text" in Inspector!
+
+SLIDE 9: TMP_Text in Code
+--------------------------
+```csharp
+using TMPro;
+
+public class UIManager : MonoBehaviour
+{
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text timerText;
+    
+    public void UpdateScore(int score)
+    {
+        scoreText.text = $"Score: {score}";
+    }
+    
+    public void UpdateTimer(int seconds)
+    {
+        int min = seconds / 60;
+        int sec = seconds % 60;
+        timerText.text = $"{min:00}:{sec:00}";
+    }
+}
+```
+
+SLIDE 10: Button Component
+---------------------------
+Makes UI element clickable:
+- Interactable: Can be clicked?
+- Transition: Visual feedback
+- Navigation: Keyboard/gamepad
+- On Click: Event when clicked
+
+Create: UI > Button - TextMeshPro
+
+SLIDE 11: Button Transitions
+-----------------------------
+Color Tint (most common):
+- Normal: Default color
+- Highlighted: Mouse over
+- Pressed: Being clicked
+- Selected: After click
+- Disabled: Can't click
+
+Sprite Swap: Different images
+Animation: Animator states
+
+SLIDE 12: Button OnClick Event
+-------------------------------
+In Inspector:
+1. Find On Click () section
+2. Click +
+3. Drag GameObject with script
+4. Select method from dropdown
+
+Methods must be public!
+
+SLIDE 13: Button in Code
+-------------------------
+```csharp
+using UnityEngine.UI;
+
+public class UIManager : MonoBehaviour
+{
+    [SerializeField] private Button playButton;
+    
+    void Start()
+    {
+        playButton.onClick.AddListener(OnPlayClicked);
+    }
+    
+    void OnPlayClicked()
+    {
+        Debug.Log("Play clicked!");
+        GameManager.Instance.StartGame(60);
+    }
+    
+    void OnDestroy()
+    {
+        playButton.onClick.RemoveListener(OnPlayClicked);
+    }
+}
+```
+
+SLIDE 14: Panel Management
+---------------------------
+Show/hide panels based on game state:
+```csharp
+public void ShowPanel(GameObject panel)
+{
+    // Hide all panels
+    mainMenuPanel.SetActive(false);
+    gameplayPanel.SetActive(false);
+    pausePanel.SetActive(false);
+    gameOverPanel.SetActive(false);
+    
+    // Show requested panel
+    panel.SetActive(true);
+}
+```
+
+SLIDE 15: UIManager Structure
+------------------------------
+```csharp
+public class UIManager : MonoBehaviour
+{
+    [Header("Panels")]
+    [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private GameObject timeSelectPanel;
+    [SerializeField] private GameObject gameplayPanel;
+    [SerializeField] private GameObject pausePanel;
+    [SerializeField] private GameObject gameOverPanel;
+    
+    [Header("Gameplay UI")]
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text timerText;
+    
+    [Header("Game Over UI")]
+    [SerializeField] private TMP_Text finalScoreText;
+}
+```
+
+SLIDE 16: UIManager Methods
+----------------------------
+```csharp
+public void ShowMainMenu()
+{
+    HideAllPanels();
+    mainMenuPanel.SetActive(true);
+}
+
+public void ShowGameplay()
+{
+    HideAllPanels();
+    gameplayPanel.SetActive(true);
+}
+
+public void ShowGameOver(int finalScore)
+{
+    HideAllPanels();
+    gameOverPanel.SetActive(true);
+    finalScoreText.text = $"Final Score: {finalScore}";
+}
+
+void HideAllPanels()
+{
+    mainMenuPanel.SetActive(false);
+    timeSelectPanel.SetActive(false);
+    gameplayPanel.SetActive(false);
+    pausePanel.SetActive(false);
+    gameOverPanel.SetActive(false);
+}
+```
+
+SLIDE 17: Connecting to GameManager
+------------------------------------
+```csharp
+// In GameManager
+void Start()
+{
+    uiManager.ShowMainMenu();
+}
+
+public void StartGame(int seconds)
+{
+    uiManager.ShowGameplay();
+    // ... start game logic
+}
+
+void EndGame()
+{
+    uiManager.ShowGameOver(score);
+    // ... end game logic
+}
+```
+
+SLIDE 18: Event Subscription for UI
+------------------------------------
+```csharp
+void OnEnable()
+{
+    GameManager.Instance.OnScoreChanged += UpdateScore;
+    GameManager.Instance.OnTimerUpdated += UpdateTimer;
+}
+
+void OnDisable()
+{
+    if (GameManager.Instance != null)
+    {
+        GameManager.Instance.OnScoreChanged -= UpdateScore;
+        GameManager.Instance.OnTimerUpdated -= UpdateTimer;
+    }
+}
+```
+
+SLIDE 19: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Import TextMeshPro essentials
+2. Replace Text with TMP_Text
+3. Create UIManager script
+4. Implement panel switching
+5. Wire up button events
+6. Connect score and timer display
+7. Test full UI flow
+
+SLIDE 20: Button Setup Checklist
+---------------------------------
+For each button:
+1. Create Button - TextMeshPro
+2. Set button text
+3. Configure transition colors
+4. Add OnClick event
+5. Assign UIManager/GameManager
+6. Select public method
+7. Test in Play mode
+
+SLIDE 21: Time Selection Panel
+-------------------------------
+```csharp
+public void OnTime60Selected()
+{
+    GameManager.Instance.StartGame(60);
+}
+
+public void OnTime180Selected()
+{
+    GameManager.Instance.StartGame(180);
+}
+
+public void OnTime300Selected()
+{
+    GameManager.Instance.StartGame(300);
+}
+```
+
+Three buttons for 1, 3, 5 minutes!
+
+SLIDE 22: Pause Panel
+----------------------
+```csharp
+public void OnPauseClicked()
+{
+    GameManager.Instance.PauseGame();
+    ShowPause();
+}
+
+public void OnResumeClicked()
+{
+    GameManager.Instance.ResumeGame();
+    ShowGameplay();
+}
+
+public void OnQuitToMenuClicked()
+{
+    GameManager.Instance.QuitToMenu();
+    ShowMainMenu();
+}
+```
+
+SLIDE 23: UI Animation (Preview)
+---------------------------------
+Make UI feel alive:
+```csharp
+// Simple scale punch on score
+scoreText.transform.localScale = Vector3.one * 1.2f;
+// Then animate back (DOTween later)
+```
+
+We'll add proper animations in Class 22!
+
+SLIDE 24: Debugging UI
+-----------------------
+Common issues:
+- Button not responding → Check Raycast Target
+- Text not showing → Check font asset assigned
+- Panel not visible → Check active state
+- Wrong panel showing → Check method calls
+
+Use Debug.Log in button methods!
+
+SLIDE 25: UI Best Practices
+----------------------------
+- Keep UIManager focused on UI
+- Use events for updates
+- Don't put game logic in UI
+- Test all buttons
+- Provide visual feedback
+- Consider accessibility
+
+SLIDE 26: Complete UIManager
+-----------------------------
+```csharp
+public class UIManager : MonoBehaviour
+{
+    // ... serialized fields ...
+    
+    void Start()
+    {
+        ShowMainMenu();
+    }
+    
+    void OnEnable()
+    {
+        // Subscribe to events
+    }
+    
+    void OnDisable()
+    {
+        // Unsubscribe
+    }
+    
+    // Panel methods
+    public void ShowMainMenu() { }
+    public void ShowTimeSelect() { }
+    public void ShowGameplay() { }
+    public void ShowPause() { }
+    public void ShowGameOver(int score) { }
+    
+    // Update methods
+    public void UpdateScore(int score) { }
+    public void UpdateTimer(int seconds) { }
+    
+    // Button handlers
+    public void OnPlayClicked() { }
+    public void OnQuitClicked() { }
+    // ... etc
+}
+```
+
+SLIDE 27: Homework/Practice
+----------------------------
+- Complete all panel UI
+- Wire up all buttons
+- Test full game flow with UI
+- Add visual polish to panels
+- Experiment with rich text
+- Prepare for Audio (Class 19)
+
+SLIDE 28: Next Class Preview
+-----------------------------
+- Audio System
+- AudioSource and AudioClip
+- SoundManager singleton
+- Background music
+- Sound effects
+- Playing audio on events
+
+SLIDE 29: UI Progress
+----------------------
+Completed:
+- Canvas with proper scaling
+- All game panels
+- TextMeshPro text
+- Buttons with events
+- UIManager script
+- Connected to GameManager
+
+Game is now playable with UI!
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- TextMeshPro for quality text
+- TMP_Text in code with using TMPro
+- Button.onClick for click events
+- UIManager controls all panels
+- SetActive for show/hide
+- Events update UI automatically
+
+

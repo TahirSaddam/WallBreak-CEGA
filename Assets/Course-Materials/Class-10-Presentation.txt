@@ -1,0 +1,478 @@
+CLASS 10: RAYCASTING & OBJECT DETECTION
+========================================
+
+SLIDE 1: Recap of Class 9
+--------------------------
+- New Input System installation
+- InputAction creation and lifecycle
+- Mouse click detection
+- Mouse position reading
+- Click delay implementation
+- RayCastManager script started
+
+SLIDE 2: What is Raycasting?
+-----------------------------
+- Ray: Invisible line in 3D space
+- Cast from point in direction
+- Detects what it hits
+- Returns: Hit object, point, distance
+- Essential for: Clicking, shooting, line of sight
+
+Think of it as a laser pointer!
+
+SLIDE 3: Ray Components
+------------------------
+A ray has:
+- Origin: Starting point (Vector3)
+- Direction: Which way it goes (Vector3)
+- Length: How far it travels (optional)
+
+```csharp
+Ray ray = new Ray(origin, direction);
+```
+
+SLIDE 4: Why Raycasting?
+-------------------------
+Use cases:
+- Click detection (our game!)
+- Shooting/bullets
+- Line of sight for AI
+- Ground detection
+- Wall detection
+- Interaction systems
+
+SLIDE 5: Screen to World
+-------------------------
+Problem:
+- Mouse position is 2D (screen pixels)
+- Game world is 3D
+- Need to convert!
+
+Solution:
+- Camera.ScreenPointToRay()
+- Creates ray from camera through screen point
+
+SLIDE 6: Camera.ScreenPointToRay
+---------------------------------
+```csharp
+// Get mouse position
+Vector2 mousePos = Mouse.current.position.ReadValue();
+
+// Convert to ray
+Ray ray = Camera.main.ScreenPointToRay(mousePos);
+
+// ray.origin = camera position
+// ray.direction = toward mouse point in world
+```
+
+SLIDE 7: Physics.Raycast
+-------------------------
+```csharp
+Ray ray = Camera.main.ScreenPointToRay(mousePos);
+
+if (Physics.Raycast(ray, out RaycastHit hit))
+{
+    // Hit something!
+    Debug.Log("Hit: " + hit.collider.name);
+}
+```
+
+Returns true if hit, false if not.
+
+SLIDE 8: RaycastHit Information
+--------------------------------
+```csharp
+if (Physics.Raycast(ray, out RaycastHit hit))
+{
+    // What we hit
+    GameObject hitObject = hit.collider.gameObject;
+    Collider hitCollider = hit.collider;
+    Transform hitTransform = hit.transform;
+    
+    // Where we hit
+    Vector3 hitPoint = hit.point;
+    Vector3 hitNormal = hit.normal;
+    
+    // How far
+    float distance = hit.distance;
+}
+```
+
+SLIDE 9: Raycast with Max Distance
+-----------------------------------
+```csharp
+float maxDistance = 100f;
+
+if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
+{
+    // Only hits within 100 units
+    Debug.Log($"Hit {hit.collider.name} at {hit.distance} units");
+}
+```
+
+Better performance with limited distance!
+
+SLIDE 10: Raycast with LayerMask
+---------------------------------
+```csharp
+// Only hit objects on "Brick" layer
+LayerMask brickLayer = LayerMask.GetMask("Brick");
+
+if (Physics.Raycast(ray, out hit, Mathf.Infinity, brickLayer))
+{
+    // Only hits bricks, ignores everything else
+}
+```
+
+Great for optimization and filtering!
+
+SLIDE 11: What is an Interface?
+--------------------------------
+- Contract that classes must follow
+- Defines methods without implementation
+- Allows polymorphism
+- Clean, flexible code
+
+```csharp
+public interface IClickable
+{
+    void OnClicked(Vector3 point);
+}
+```
+
+Any class implementing this MUST have OnClicked method.
+
+SLIDE 12: Why Use Interfaces?
+------------------------------
+Without interface:
+```csharp
+Brick brick = hit.GetComponent<Brick>();
+if (brick != null) brick.OnClicked(point);
+
+Button button = hit.GetComponent<Button>();
+if (button != null) button.OnClicked(point);
+// Repeat for every clickable type...
+```
+
+With interface:
+```csharp
+IClickable clickable = hit.GetComponent<IClickable>();
+if (clickable != null) clickable.OnClicked(point);
+// Works for ALL clickable objects!
+```
+
+SLIDE 13: Creating IOption Interface
+-------------------------------------
+```csharp
+using UnityEngine;
+
+public interface IOption
+{
+    void OnClicked(Vector3 impactPoint);
+}
+```
+
+- Simple, one method
+- Takes click position
+- Any clickable object implements this
+
+SLIDE 14: Implementing Interface
+---------------------------------
+```csharp
+public class Brick3D : MonoBehaviour, IOption
+{
+    public void OnClicked(Vector3 impactPoint)
+    {
+        Debug.Log($"Brick clicked at {impactPoint}!");
+        // Handle click - we'll add physics later
+    }
+}
+```
+
+Note: Must implement ALL interface methods!
+
+SLIDE 15: Complete Raycast Flow
+--------------------------------
+```csharp
+void OnMouseClick(CallbackContext ctx)
+{
+    // 1. Get mouse position
+    Vector2 mousePos = Mouse.current.position.ReadValue();
+    
+    // 2. Create ray from camera
+    Ray ray = playerCamera.ScreenPointToRay(mousePos);
+    
+    // 3. Cast ray
+    if (Physics.Raycast(ray, out RaycastHit hit))
+    {
+        // 4. Check for IOption
+        IOption clickable = hit.collider.GetComponent<IOption>();
+        
+        // 5. Call OnClicked if found
+        if (clickable != null)
+        {
+            clickable.OnClicked(hit.point);
+        }
+    }
+}
+```
+
+SLIDE 16: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create IOption.cs interface
+2. Update Brick3D to implement IOption
+3. Complete RayCastManager raycast logic
+4. Test clicking on bricks
+5. Log hit information
+6. Visualize rays with Debug.DrawRay
+7. Test with multiple bricks
+
+SLIDE 17: Debug.DrawRay
+------------------------
+Visualize rays in Scene view:
+```csharp
+void OnMouseClick(CallbackContext ctx)
+{
+    Ray ray = playerCamera.ScreenPointToRay(mousePos);
+    
+    // Draw ray in Scene view (red, 2 seconds)
+    Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f);
+    
+    if (Physics.Raycast(ray, out hit))
+    {
+        // Draw to hit point (green)
+        Debug.DrawLine(ray.origin, hit.point, Color.green, 2f);
+    }
+}
+```
+
+SLIDE 18: Raycast Variations
+-----------------------------
+```csharp
+// Single hit (first object)
+Physics.Raycast(ray, out hit);
+
+// All hits along ray
+RaycastHit[] hits = Physics.RaycastAll(ray);
+
+// Non-allocating version (performance)
+int hitCount = Physics.RaycastNonAlloc(ray, resultsArray);
+
+// Sphere cast (thick ray)
+Physics.SphereCast(ray, radius, out hit);
+
+// Box cast
+Physics.BoxCast(center, halfExtents, direction, out hit);
+```
+
+SLIDE 19: SphereCast
+---------------------
+Like raycast but with thickness:
+```csharp
+float radius = 0.5f;
+
+if (Physics.SphereCast(ray, radius, out RaycastHit hit))
+{
+    // Easier to hit things
+    // Good for imprecise selection
+}
+```
+
+Useful for:
+- Forgiving click detection
+- Character ground checks
+- Wider projectiles
+
+SLIDE 20: RaycastAll
+---------------------
+Get all objects along ray:
+```csharp
+RaycastHit[] hits = Physics.RaycastAll(ray, maxDistance);
+
+foreach (RaycastHit hit in hits)
+{
+    Debug.Log($"Hit: {hit.collider.name} at {hit.distance}");
+}
+
+// Sort by distance
+System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+```
+
+SLIDE 21: Common Raycast Issues
+--------------------------------
+No hit detected:
+- Wrong layer
+- Ray too short
+- Wrong direction
+- Collider disabled
+- Is Trigger (still works, but check)
+
+Wrong object hit:
+- Another object in the way
+- Layer mask wrong
+- Collider size wrong
+
+SLIDE 22: Raycast Best Practices
+---------------------------------
+- Cache camera reference
+- Use LayerMask for filtering
+- Limit ray distance
+- Use Debug.DrawRay for debugging
+- Check for null before using hit
+- Consider SphereCast for UX
+
+SLIDE 23: Complete RayCastManager
+----------------------------------
+```csharp
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
+
+public class RayCastManager : MonoBehaviour
+{
+    [SerializeField] private float clickDelay = 0.2f;
+    
+    private Camera playerCamera;
+    private InputAction clickAction;
+    private float lastClickTime;
+    
+    void Start()
+    {
+        playerCamera = Camera.main;
+    }
+    
+    void Awake()
+    {
+        clickAction = new InputAction();
+        clickAction.AddBinding("<Mouse>/leftButton");
+        clickAction.performed += OnMouseClick;
+    }
+    
+    void OnEnable() => clickAction.Enable();
+    void OnDisable() => clickAction.Disable();
+    
+    void OnMouseClick(CallbackContext ctx)
+    {
+        if (Time.time - lastClickTime < clickDelay)
+            return;
+        
+        lastClickTime = Time.time;
+        
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Ray ray = playerCamera.ScreenPointToRay(mousePos);
+        
+        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 1f);
+        
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            IOption clickable = hit.collider.GetComponent<IOption>();
+            if (clickable != null)
+            {
+                clickable.OnClicked(hit.point);
+            }
+        }
+    }
+}
+```
+
+SLIDE 24: Brick3D with IOption
+-------------------------------
+```csharp
+using UnityEngine;
+
+public class Brick3D : MonoBehaviour, IOption
+{
+    private Rigidbody rb;
+    
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    public void OnClicked(Vector3 impactPoint)
+    {
+        Debug.Log($"Brick clicked at {impactPoint}");
+        
+        // For now, just release the brick
+        rb.isKinematic = false;
+    }
+    
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Debug.Log("Brick hit ground!");
+        }
+    }
+}
+```
+
+SLIDE 25: Testing the System
+-----------------------------
+1. Enter Play mode
+2. Click on brick
+3. Watch Console for logs
+4. See brick fall
+5. Check Scene view for ray visualization
+6. Try clicking empty space
+7. Try clicking ground
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Create multiple clickable objects
+- Implement different IOption behaviors
+- Experiment with SphereCast
+- Try RaycastAll
+- Add visual feedback on hover
+- Read: Unity Manual "Physics.Raycast"
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Forces and physics interactions
+- AddForce and ForceMode
+- Applying impact forces
+- Torque for rotation
+- Physics.OverlapSphere
+- Creating impact radius effect
+
+SLIDE 28: Project Progress
+---------------------------
+We now have:
+- Complete input system
+- Raycast click detection
+- IOption interface
+- Bricks respond to clicks
+- Basic fall behavior
+
+Next: Make it feel impactful!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Raycast detects objects in 3D
+- ScreenPointToRay converts mouse to ray
+- RaycastHit contains hit information
+- Interfaces enable flexible code
+- IOption makes any object clickable
+- Debug.DrawRay for visualization
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Basic raycast
+Physics.Raycast(ray, out hit);
+
+// With distance
+Physics.Raycast(ray, out hit, maxDistance);
+
+// With layer
+Physics.Raycast(ray, out hit, maxDistance, layerMask);
+
+// Screen to ray
+Camera.main.ScreenPointToRay(mousePosition);
+
+// Get interface
+hit.collider.GetComponent<IOption>();
+```
+

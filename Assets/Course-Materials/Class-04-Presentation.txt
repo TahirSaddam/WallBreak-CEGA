@@ -1,0 +1,331 @@
+CLASS 4: PREFABS & PROJECT ORGANIZATION
+========================================
+
+SLIDE 1: Recap of Class 3
+--------------------------
+- 3D Primitives (Cube, Plane, Sphere, etc.)
+- Materials and URP Lit shader
+- Base Color, Metallic, Smoothness
+- Creating and applying materials
+- Ground plane setup with tag
+- Textures and UV basics
+
+SLIDE 2: What is a Prefab?
+---------------------------
+- Reusable GameObject template
+- "Blueprint" for objects
+- Create once, use many times
+- Changes to prefab update ALL instances
+- Essential for game development
+- Stored as asset file (.prefab)
+
+SLIDE 3: Why Use Prefabs?
+--------------------------
+Benefits:
+- Consistency: All instances identical
+- Efficiency: Change once, update all
+- Reusability: Use across scenes
+- Organization: Clean hierarchy
+- Instantiation: Spawn at runtime
+
+Our bricks will be prefabs!
+
+SLIDE 4: Creating a Prefab
+---------------------------
+Method 1: Drag to Project
+1. Create GameObject in scene
+2. Configure it completely
+3. Drag from Hierarchy to Project folder
+4. Blue icon = Prefab asset
+
+Method 2: Right-click
+1. Select configured GameObject
+2. Right-click in Project
+3. Create > Prefab Variant (from selection)
+
+SLIDE 5: Prefab Icons
+----------------------
+In Hierarchy:
+- Blue cube icon = Prefab instance
+- Blue text = Linked to prefab
+
+In Project:
+- Blue cube = Prefab asset
+- Regular cube = Not a prefab
+
+SLIDE 6: Creating Our Brick Prefab
+-----------------------------------
+Steps:
+1. Create Cube: GameObject > 3D Object > Cube
+2. Rename to "Brick"
+3. Scale: (2, 1, 1) - brick shape
+4. Apply Brick material
+5. Create folder: Assets/Prefabs
+6. Drag Brick to Prefabs folder
+7. Delete instance from scene (for now)
+
+SLIDE 7: Prefab Mode
+---------------------
+- Edit prefab in isolation
+- Double-click prefab in Project
+- Or click arrow in Hierarchy
+- Shows only prefab contents
+- Changes affect all instances
+- Auto-save or manual save
+
+Exit: Click back arrow or breadcrumb
+
+SLIDE 8: Prefab Instances
+--------------------------
+- Copy of prefab in scene
+- Linked to original prefab
+- Drag prefab to scene = new instance
+- Blue color indicates prefab link
+- Can have local overrides
+
+SLIDE 9: Prefab Overrides
+--------------------------
+- Instance can differ from prefab
+- Bold = overridden property
+- Override options:
+  * Apply: Push changes to prefab
+  * Revert: Reset to prefab values
+- Right-click property for options
+
+SLIDE 10: Applying Overrides
+-----------------------------
+When you modify an instance:
+1. Property becomes bold
+2. Overrides dropdown appears
+3. Options:
+   - Apply to Prefab: Update all instances
+   - Revert: Undo local changes
+   - Apply All / Revert All
+
+SLIDE 11: Nested Prefabs
+-------------------------
+- Prefabs inside prefabs
+- Useful for complex objects
+- Example:
+  * Car prefab contains:
+    - Body prefab
+    - Wheel prefab (x4)
+- Changes to wheel update all cars
+
+SLIDE 12: Prefab Variants
+--------------------------
+- Based on another prefab
+- Inherits from "base" prefab
+- Can override specific properties
+- Base changes flow to variants
+
+Example:
+- Brick (base)
+  - RedBrick (variant)
+  - BlueBrick (variant)
+
+SLIDE 13: Project Organization
+-------------------------------
+Good folder structure:
+```
+Assets/
+├── Materials/
+├── Prefabs/
+│   └── 3D/
+├── Scenes/
+├── Scripts/
+│   └── 3D/
+├── Audio/
+│   ├── Music/
+│   └── SFX/
+├── Textures/
+└── UI/
+```
+
+SLIDE 14: Naming Conventions
+-----------------------------
+Best practices:
+- PascalCase for assets: "BrickPrefab"
+- Descriptive names: "Ground_Material"
+- Prefixes for types: "SFX_BrickHit"
+- No spaces (use underscores or camelCase)
+- Version if needed: "Brick_v2"
+
+Consistency is key!
+
+SLIDE 15: Folder Organization Tips
+-----------------------------------
+- Create folders BEFORE adding assets
+- One folder per asset type
+- Subfolders for categories
+- Keep root Assets clean
+- Use "Editor" folder for editor scripts
+- Use "Resources" folder sparingly
+
+SLIDE 16: Our Project Structure
+--------------------------------
+For WallBreak3D:
+```
+Assets/
+├── Materials/
+│   ├── Ground.mat
+│   └── Brick.mat
+├── Prefabs/
+│   └── 3D/
+│       └── Brick.prefab
+├── Scenes/
+│   └── Gameplay.unity
+├── Scripts/
+│   └── 3D/
+├── SFX/
+└── UI Assets/
+```
+
+SLIDE 17: Asset Labels
+-----------------------
+- Tag assets for organization
+- Filter by label in Project
+- Add via Inspector bottom
+- Custom labels allowed
+- Useful for large projects
+
+Example labels:
+- "Environment"
+- "Character"
+- "Audio"
+
+SLIDE 18: Search in Project
+----------------------------
+- Search bar at top of Project window
+- Filter by type: t:Material
+- Filter by label: l:Environment
+- Filter by name
+- Save searches as favorites
+
+Useful searches:
+- t:Prefab - All prefabs
+- t:Material - All materials
+- t:Script - All scripts
+
+SLIDE 19: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create project folder structure
+2. Create Brick prefab:
+   - Cube scaled to (2, 1, 1)
+   - Brick material applied
+   - Saved in Prefabs/3D/
+3. Test prefab instances
+4. Practice Prefab Mode
+5. Try overrides and apply/revert
+6. Organize existing assets
+
+SLIDE 20: Brick Prefab Components
+----------------------------------
+Our Brick prefab should have:
+- Transform (default)
+- Mesh Filter (Cube mesh)
+- Mesh Renderer (Brick material)
+- Box Collider (auto-added with Cube)
+
+Later we'll add:
+- Rigidbody (physics)
+- Brick3D script (behavior)
+
+SLIDE 21: Testing Prefabs
+--------------------------
+Verification steps:
+1. Drag prefab to scene multiple times
+2. Modify one instance
+3. Apply changes to prefab
+4. Verify all instances updated
+5. Revert an override
+6. Verify instance matches prefab
+
+SLIDE 22: Prefab Best Practices
+--------------------------------
+- Create prefab early, iterate often
+- Keep prefabs self-contained
+- Use Prefab Mode for major changes
+- Test instances after changes
+- Document complex prefabs
+- Use variants for variations
+- Don't nest too deeply
+
+SLIDE 23: Common Prefab Mistakes
+---------------------------------
+- Forgetting to apply overrides
+- Breaking prefab link accidentally
+- Too many nested prefabs
+- Not organizing in folders
+- Modifying wrong instance
+- Forgetting to save prefab
+
+SLIDE 24: Breaking Prefab Link
+-------------------------------
+Sometimes needed:
+- Right-click > Prefab > Unpack
+- Unpack: Keeps children as prefabs
+- Unpack Completely: All become regular
+
+Warning: Cannot be undone easily!
+
+SLIDE 25: Instantiate (Preview)
+--------------------------------
+Spawning prefabs via code:
+```csharp
+public GameObject brickPrefab;
+
+void SpawnBrick()
+{
+    Instantiate(brickPrefab, position, rotation);
+}
+```
+
+We'll use this for wall generation!
+
+SLIDE 26: Asset Import Settings
+--------------------------------
+- Select asset in Project
+- Inspector shows import settings
+- Different for each asset type
+- Textures: Size, compression
+- Audio: Quality, load type
+- Models: Scale, materials
+
+SLIDE 27: Meta Files
+---------------------
+- .meta files store asset settings
+- Auto-generated by Unity
+- Include in version control!
+- Don't delete manually
+- Links asset to its GUID
+
+SLIDE 28: Homework/Practice
+----------------------------
+- Create 3 different prefab variants
+- Practice Prefab Mode editing
+- Organize a messy project folder
+- Experiment with nested prefabs
+- Create prefab with multiple materials
+- Read: Unity Manual "Prefabs"
+
+SLIDE 29: Next Class Preview
+-----------------------------
+- Introduction to C# scripting
+- Creating your first script
+- MonoBehaviour basics
+- Variables and data types
+- Debug.Log for testing
+- Attaching scripts to GameObjects
+
+SLIDE 30: Questions?
+---------------------
+Key Takeaways:
+- Prefabs are reusable templates
+- Create once, use many times
+- Changes propagate to instances
+- Organize project from the start
+- Use clear naming conventions
+- Prefab Mode for isolated editing
+

@@ -1,0 +1,441 @@
+CLASS 22: ANIMATION WITH DOTWEEN
+=================================
+
+SLIDE 1: Recap of Class 21
+---------------------------
+- Game feel and polish
+- Camera shake
+- Screen flash
+- Hit stop
+- UI feedback
+- Layered feedback systems
+
+SLIDE 2: What is DOTween?
+--------------------------
+- Powerful animation library
+- Smooth tweening
+- Easy to use
+- Performance optimized
+- Industry standard
+- Free version available
+
+Tweening = Smooth interpolation between values
+
+SLIDE 3: Why DOTween?
+----------------------
+Without DOTween:
+```csharp
+IEnumerator MoveObject()
+{
+    float elapsed = 0f;
+    while (elapsed < duration)
+    {
+        transform.position = Vector3.Lerp(start, end, elapsed/duration);
+        elapsed += Time.deltaTime;
+        yield return null;
+    }
+}
+```
+
+With DOTween:
+```csharp
+transform.DOMove(target, duration);
+```
+
+One line!
+
+SLIDE 4: Installing DOTween
+----------------------------
+Already in project: Plugins/Demigiant/
+
+First time setup:
+1. Tools > Demigiant > DOTween Utility Panel
+2. Click "Setup DOTween..."
+3. Click "Apply"
+4. Done!
+
+SLIDE 5: Basic DOTween Syntax
+------------------------------
+```csharp
+using DG.Tweening;
+
+// Move
+transform.DOMove(targetPosition, duration);
+
+// Scale
+transform.DOScale(targetScale, duration);
+
+// Rotate
+transform.DORotate(targetRotation, duration);
+
+// Fade (UI Image)
+image.DOFade(targetAlpha, duration);
+```
+
+SLIDE 6: Transform Tweens
+--------------------------
+```csharp
+// Move to position
+transform.DOMove(new Vector3(0, 5, 0), 1f);
+
+// Move on single axis
+transform.DOMoveY(5f, 1f);
+transform.DOMoveX(10f, 0.5f);
+
+// Local move (relative to parent)
+transform.DOLocalMove(localTarget, 1f);
+
+// Move by amount (relative)
+transform.DOMove(transform.position + offset, 1f);
+```
+
+SLIDE 7: Scale Tweens
+----------------------
+```csharp
+// Scale to size
+transform.DOScale(2f, 0.5f);  // Uniform
+transform.DOScale(new Vector3(2, 1, 1), 0.5f);  // Non-uniform
+
+// Scale single axis
+transform.DOScaleX(2f, 0.5f);
+
+// Punch scale (bounce back)
+transform.DOPunchScale(Vector3.one * 0.2f, 0.3f);
+```
+
+SLIDE 8: Rotation Tweens
+-------------------------
+```csharp
+// Rotate to angle
+transform.DORotate(new Vector3(0, 180, 0), 1f);
+
+// Rotate by amount
+transform.DORotate(new Vector3(0, 360, 0), 1f, RotateMode.FastBeyond360);
+
+// Local rotation
+transform.DOLocalRotate(angles, duration);
+```
+
+SLIDE 9: Easing Functions
+--------------------------
+Control animation curve:
+```csharp
+transform.DOMove(target, 1f).SetEase(Ease.OutBounce);
+transform.DOScale(2f, 0.5f).SetEase(Ease.OutElastic);
+transform.DOMove(target, 1f).SetEase(Ease.InOutQuad);
+```
+
+Common eases:
+- Linear: Constant speed
+- OutQuad: Slow end
+- OutBounce: Bouncy
+- OutElastic: Springy
+- InOutQuad: Smooth start/end
+
+SLIDE 10: Easing Visual Guide
+------------------------------
+```
+Linear:     ──────────
+InQuad:     ╱
+OutQuad:          ╲
+InOutQuad:  ╱────╲
+OutBounce:       ∿∿∿
+OutElastic:      ∼∼∼
+```
+
+Experiment to find what feels right!
+
+SLIDE 11: Callbacks
+--------------------
+```csharp
+transform.DOMove(target, 1f)
+    .OnStart(() => Debug.Log("Started"))
+    .OnUpdate(() => Debug.Log("Updating"))
+    .OnComplete(() => Debug.Log("Done!"));
+```
+
+Execute code at different points!
+
+SLIDE 12: Chaining Tweens
+--------------------------
+```csharp
+// Sequential with callbacks
+transform.DOMove(pos1, 1f)
+    .OnComplete(() => transform.DOMove(pos2, 1f));
+
+// Or use Sequences (better)
+```
+
+SLIDE 13: Sequences
+--------------------
+```csharp
+Sequence mySequence = DOTween.Sequence();
+
+mySequence.Append(transform.DOMove(pos1, 1f));
+mySequence.Append(transform.DOScale(2f, 0.5f));
+mySequence.Append(transform.DORotate(new Vector3(0, 180, 0), 0.5f));
+
+mySequence.Play();
+```
+
+Chain multiple tweens!
+
+SLIDE 14: Sequence Timing
+--------------------------
+```csharp
+Sequence seq = DOTween.Sequence();
+
+// Sequential
+seq.Append(tween1);  // Plays first
+seq.Append(tween2);  // Then this
+
+// Parallel (at same time)
+seq.Join(tween3);    // With tween2
+
+// Insert at time
+seq.Insert(0.5f, tween4);  // At 0.5 seconds
+
+// Delay
+seq.AppendInterval(1f);  // Wait 1 second
+```
+
+SLIDE 15: Camera Movement
+--------------------------
+```csharp
+public class WallManager : MonoBehaviour
+{
+    [SerializeField] private float cameraMoveDuration = 1f;
+    
+    void MoveToNextWall(Vector3 wallPosition)
+    {
+        Camera.main.transform.DOMove(
+            new Vector3(
+                Camera.main.transform.position.x,
+                Camera.main.transform.position.y,
+                wallPosition.z - 6f
+            ),
+            cameraMoveDuration
+        ).SetEase(Ease.InOutQuad);
+    }
+}
+```
+
+SLIDE 16: Brick Spawn Animation
+--------------------------------
+```csharp
+IEnumerator AnimateBrickSpawn(Transform brick, Vector3 targetPos, float delay)
+{
+    yield return new WaitForSeconds(delay);
+    
+    // Start above
+    brick.position = targetPos + Vector3.up * 10f;
+    
+    // Fall to position
+    brick.DOMove(targetPos, 0.5f)
+        .SetEase(Ease.OutBounce);
+    
+    // Squash on land
+    brick.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), 0.3f);
+}
+```
+
+SLIDE 17: Squash and Stretch
+-----------------------------
+Animation principle with DOTween:
+```csharp
+void SquashStretch(Transform target)
+{
+    Sequence seq = DOTween.Sequence();
+    
+    // Stretch (falling)
+    seq.Append(target.DOScale(new Vector3(0.8f, 1.3f, 0.8f), 0.1f));
+    
+    // Squash (landing)
+    seq.Append(target.DOScale(new Vector3(1.3f, 0.7f, 1.3f), 0.1f));
+    
+    // Return to normal
+    seq.Append(target.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutElastic));
+}
+```
+
+SLIDE 18: UI Animations
+------------------------
+```csharp
+// Panel slide in
+panel.transform.DOLocalMoveX(0, 0.3f)
+    .From(-500f)
+    .SetEase(Ease.OutBack);
+
+// Fade in
+canvasGroup.DOFade(1f, 0.3f).From(0f);
+
+// Scale pop
+button.transform.DOScale(1f, 0.3f)
+    .From(0f)
+    .SetEase(Ease.OutBack);
+```
+
+SLIDE 19: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Setup DOTween in project
+2. Implement camera movement
+3. Create brick spawn animation
+4. Add squash and stretch
+5. Animate UI panels
+6. Add score punch effect
+7. Test and tune easing
+
+SLIDE 20: Killing Tweens
+-------------------------
+```csharp
+// Kill all tweens on object
+transform.DOKill();
+
+// Kill specific tween
+Tween myTween = transform.DOMove(target, 1f);
+myTween.Kill();
+
+// Kill and complete
+transform.DOKill(true);  // Jumps to end
+
+// Pause/Resume
+myTween.Pause();
+myTween.Play();
+```
+
+SLIDE 21: Tween Settings
+-------------------------
+```csharp
+transform.DOMove(target, 1f)
+    .SetEase(Ease.OutQuad)
+    .SetDelay(0.5f)           // Wait before start
+    .SetLoops(3)              // Repeat 3 times
+    .SetLoops(-1)             // Infinite
+    .SetLoops(2, LoopType.Yoyo)  // Back and forth
+    .SetUpdate(true);         // Ignore timeScale
+```
+
+SLIDE 22: DOTween with Events
+------------------------------
+```csharp
+void OnBrickDetached(Brick3D brick)
+{
+    // Animate score text
+    scoreText.transform.DOPunchScale(Vector3.one * 0.3f, 0.2f);
+    
+    // Animate brick (before physics)
+    brick.transform.DOShakePosition(0.1f, 0.2f);
+}
+
+void OnWallCleared()
+{
+    // Celebration sequence
+    Sequence celebration = DOTween.Sequence();
+    celebration.Append(Camera.main.DOShakePosition(0.3f, 0.3f));
+    celebration.Join(screenFlash.DOFade(1f, 0.1f));
+    celebration.Append(screenFlash.DOFade(0f, 0.2f));
+}
+```
+
+SLIDE 23: Performance Tips
+---------------------------
+- Reuse tweens when possible
+- Kill tweens when done
+- Don't create in Update
+- Use SetAutoKill(false) to reuse
+- Cache tween references
+- Use Sequences for complex animations
+
+SLIDE 24: Common DOTween Mistakes
+----------------------------------
+- Forgetting to import DG.Tweening
+- Not setting up DOTween
+- Creating tweens every frame
+- Not killing old tweens
+- Wrong easing for effect
+- Too many simultaneous tweens
+
+SLIDE 25: Complete Brick Animation
+-----------------------------------
+```csharp
+public void SpawnBrickAnimated(Transform brick, Vector3 target, float delay)
+{
+    brick.position = target + Vector3.up * 8f;
+    brick.localScale = Vector3.zero;
+    
+    Sequence spawnSeq = DOTween.Sequence();
+    
+    spawnSeq.AppendInterval(delay);
+    spawnSeq.Append(brick.DOScale(1f, 0.3f).SetEase(Ease.OutBack));
+    spawnSeq.Join(brick.DOMove(target, 0.5f).SetEase(Ease.OutBounce));
+    spawnSeq.Append(brick.DOPunchScale(new Vector3(0.1f, -0.1f, 0.1f), 0.2f));
+}
+```
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Add animations to all UI panels
+- Create satisfying brick spawn
+- Implement camera transitions
+- Add score animations
+- Experiment with easing
+- Prepare for Advanced Features (Class 23)
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Wall patterns (enum-based)
+- Weather effects
+- Object pooling
+- Performance optimization
+- Profiler usage
+- Final polish
+
+SLIDE 28: Animation Progress
+-----------------------------
+Completed:
+- DOTween setup
+- Camera movement
+- Brick spawn animation
+- Squash and stretch
+- UI animations
+- Score feedback
+
+Game feels professional!
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- DOTween simplifies animation
+- SetEase for different feels
+- Sequences for complex animations
+- Callbacks for timing
+- Kill tweens to clean up
+- One line = smooth animation
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+using DG.Tweening;
+
+// Basic tweens
+transform.DOMove(target, duration);
+transform.DOScale(scale, duration);
+transform.DORotate(angles, duration);
+
+// Settings
+.SetEase(Ease.OutBounce)
+.SetDelay(0.5f)
+.OnComplete(() => { })
+
+// Sequence
+Sequence seq = DOTween.Sequence();
+seq.Append(tween1);
+seq.Join(tween2);
+seq.Play();
+
+// Cleanup
+transform.DOKill();
+```
+
+

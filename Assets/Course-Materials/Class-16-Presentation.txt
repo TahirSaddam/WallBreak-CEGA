@@ -1,0 +1,398 @@
+CLASS 16: MILESTONE - MIDTERM PROJECT SPRINT
+=============================================
+
+SLIDE 1: Midterm Sprint Overview
+---------------------------------
+Today's Goal:
+- Integrate all systems
+- Complete core game loop
+- Test everything together
+- Fix any issues
+- Have a PLAYABLE game!
+
+No new concepts - APPLICATION of Classes 1-15!
+
+SLIDE 2: What We've Built
+--------------------------
+Classes 1-6: Foundations
+- Unity basics, scene setup
+- Materials, prefabs
+- C# scripting fundamentals
+
+Classes 7-11: Physics & Input
+- Rigidbody, colliders
+- Input system, raycasting
+- Forces and interactions
+
+Classes 12-15: Core Mechanics
+- Wall generation
+- Events and delegates
+- Game management
+- Timer system
+
+SLIDE 3: Midterm Requirements
+------------------------------
+Your game must have:
+1. ✓ Clickable bricks with physics
+2. ✓ Procedurally generated walls
+3. ✓ Score system
+4. ✓ Countdown timer
+5. ✓ Game over condition
+6. ✓ New wall spawns when cleared
+
+Today: Make sure it ALL works together!
+
+SLIDE 4: Integration Checklist
+-------------------------------
+Systems to verify:
+- [ ] RayCastManager → Brick3D
+- [ ] Brick3D → Events
+- [ ] Events → GameManager
+- [ ] Events → WallManager
+- [ ] GameManager → Timer
+- [ ] WallManager → WallGenerator
+- [ ] All managers connected
+
+SLIDE 5: Scene Setup Verification
+----------------------------------
+Your scene should have:
+```
+Gameplay Scene
+├── Main Camera
+├── Directional Light
+├── Ground (with Ground tag)
+├── Managers
+│   ├── GameManager
+│   ├── WallManager
+│   ├── WallGenerator
+│   └── RayCastManager
+└── (Walls spawn at runtime)
+```
+
+SLIDE 6: Testing Workflow
+--------------------------
+1. Enter Play mode
+2. Verify wall generates
+3. Click a brick
+4. Verify brick falls with physics
+5. Verify score increases
+6. Verify timer counts down
+7. Clear all bricks
+8. Verify new wall spawns
+9. Let timer run out
+10. Verify game over triggers
+
+SLIDE 7: Common Integration Issues
+-----------------------------------
+Issue: Nothing happens on click
+- Check RayCastManager is in scene
+- Check InputAction is enabled
+- Check raycast hits collider
+- Check IOption is implemented
+
+Issue: Brick doesn't fall
+- Check Rigidbody exists
+- Check isKinematic toggles
+- Check forces are applied
+
+SLIDE 8: Common Integration Issues (2)
+---------------------------------------
+Issue: Score doesn't update
+- Check event subscription
+- Check event is invoked
+- Check GameManager.Instance exists
+
+Issue: Wall doesn't respawn
+- Check WallManager receives events
+- Check brick count tracking
+- Check GenerateWall is called
+
+SLIDE 9: Debugging Strategy
+----------------------------
+Add Debug.Log at key points:
+```csharp
+// In RayCastManager
+Debug.Log("Click detected");
+Debug.Log($"Hit: {hit.collider.name}");
+
+// In Brick3D
+Debug.Log("OnClicked called");
+Debug.Log("Event fired");
+
+// In GameManager
+Debug.Log($"Score: {score}");
+Debug.Log($"Timer: {remainingTime}");
+
+// In WallManager
+Debug.Log($"Bricks remaining: {count}");
+```
+
+SLIDE 10: Sprint Task 1 - Verify Input
+---------------------------------------
+Test RayCastManager:
+1. Enter Play mode
+2. Click anywhere
+3. Check Console for click log
+4. Click on brick
+5. Check Console for hit log
+
+If not working:
+- Verify InputAction binding
+- Check camera reference
+- Verify collider on brick
+
+SLIDE 11: Sprint Task 2 - Verify Physics
+-----------------------------------------
+Test Brick3D:
+1. Click brick
+2. Verify it falls
+3. Verify it rotates/tumbles
+4. Verify it hits ground
+5. Check impact looks good
+
+If not working:
+- Check Rigidbody settings
+- Verify isKinematic toggles
+- Adjust force values
+
+SLIDE 12: Sprint Task 3 - Verify Events
+----------------------------------------
+Test event flow:
+1. Click brick
+2. Check Console for event logs
+3. Verify score increases
+4. Verify brick count decreases
+
+If not working:
+- Check OnEnable subscriptions
+- Verify events are invoked
+- Check for null references
+
+SLIDE 13: Sprint Task 4 - Verify Timer
+---------------------------------------
+Test timer:
+1. Start game
+2. Watch timer count down
+3. Verify updates every second
+4. Let timer reach 0
+5. Verify game over triggers
+
+If not working:
+- Check coroutine starts
+- Verify WaitForSeconds
+- Check EndGame is called
+
+SLIDE 14: Sprint Task 5 - Verify Wall Cycle
+--------------------------------------------
+Test wall respawn:
+1. Clear all bricks
+2. Verify new wall appears
+3. Repeat 2-3 times
+4. Check walls spawn correctly
+
+If not working:
+- Check brick count reaches 0
+- Verify GenerateWall called
+- Check old wall destroyed
+
+SLIDE 15: Code Review Checklist
+--------------------------------
+Review your scripts:
+- [ ] No errors in Console
+- [ ] No warnings (fix if possible)
+- [ ] Variables have [SerializeField]
+- [ ] Events use OnEnable/OnDisable
+- [ ] Coroutines can be stopped
+- [ ] References assigned in Inspector
+
+SLIDE 16: Performance Check
+----------------------------
+Watch for:
+- Frame rate drops
+- Lag on click
+- Slow wall generation
+- Physics jitter
+
+Quick fixes:
+- Reduce brick count
+- Simplify effects
+- Check for infinite loops
+- Profile if needed
+
+SLIDE 17: Game Feel Tuning
+---------------------------
+Adjust for satisfaction:
+- Impact force (300-500)
+- Fall force (200-400)
+- Torque amount (30-70)
+- Click delay (0.1-0.3)
+- Timer duration (60-180)
+
+Play and iterate!
+
+SLIDE 18: Hands-On Sprint Time
+-------------------------------
+Next 30-45 minutes:
+1. Open your project
+2. Run through all tests
+3. Fix any issues
+4. Tune game feel
+5. Test full game loop
+6. Prepare to demonstrate
+
+Ask instructor for help if stuck!
+
+SLIDE 19: Demonstration Criteria
+---------------------------------
+Show instructor:
+1. Click brick → Physics response
+2. Score increases
+3. Timer counts down
+4. Wall clears → New wall
+5. Timer ends → Game over
+
+All 5 must work!
+
+SLIDE 20: Stretch Goals
+------------------------
+If everything works, try:
+- Add more brick rows/columns
+- Implement chain reactions
+- Add difficulty progression
+- Create different wall patterns
+- Polish physics feel
+
+SLIDE 21: What's Coming Next
+-----------------------------
+Part 4: Polish & Complete Game
+
+Class 17-18: UI System
+- Canvas and layout
+- TextMeshPro
+- Buttons and panels
+
+Class 19: Audio System
+Class 20-21: Visual Effects
+Class 22: DOTween Animation
+Class 23: Advanced Features
+Class 24: Final Sprint
+
+SLIDE 22: Skills Assessment
+----------------------------
+You should now be able to:
+- Navigate Unity confidently
+- Create and use prefabs
+- Write C# scripts
+- Implement physics
+- Handle input
+- Use events
+- Manage game state
+- Use coroutines
+
+Congratulations on reaching Midterm!
+
+SLIDE 23: Common Midterm Fixes
+-------------------------------
+Last-minute issues:
+
+"Brick doesn't respond to click"
+→ Check IOption implementation
+
+"Score shows wrong value"
+→ Check event parameter
+
+"Timer doesn't stop"
+→ Store and stop coroutine
+
+"Wall spawns in wrong place"
+→ Check WallGenerator position
+
+SLIDE 24: Final Integration Code
+---------------------------------
+GameManager.StartGame():
+```csharp
+public void StartGame(int seconds)
+{
+    currentState = GameState.Playing;
+    score = 0;
+    
+    wallManager.StartGame();
+    StartCoroutine(TimerCoroutine(seconds));
+}
+```
+
+SLIDE 25: Final Integration Code (2)
+-------------------------------------
+WallManager flow:
+```csharp
+void OnBrickDetached(Brick3D brick)
+{
+    remainingBricks--;
+    
+    if (remainingBricks <= 0)
+    {
+        SpawnNextWall();
+    }
+}
+
+void SpawnNextWall()
+{
+    wallGenerator.GenerateWall();
+    remainingBricks = wallGenerator.GetBrickCount();
+}
+```
+
+SLIDE 26: Midterm Complete!
+----------------------------
+If your game works:
+- Core loop functional
+- All systems integrated
+- Ready for polish phase
+
+If issues remain:
+- Note what's broken
+- We'll address in office hours
+- Don't fall behind!
+
+SLIDE 27: Reflection Questions
+-------------------------------
+Think about:
+1. What was hardest to implement?
+2. What would you do differently?
+3. What feature are you most proud of?
+4. What do you want to add next?
+
+SLIDE 28: Break Before Part 4
+------------------------------
+Take a moment to:
+- Save your project
+- Commit to version control
+- Back up your work
+- Rest and celebrate!
+
+You've built a working game!
+
+SLIDE 29: Questions?
+---------------------
+Common questions:
+- "My X isn't working" → Debug systematically
+- "How do I add Y?" → Coming in Part 4
+- "Is my code good?" → If it works, it's good!
+- "What's next?" → UI, Audio, Effects, Polish
+
+SLIDE 30: Midterm Milestone Achieved!
+--------------------------------------
+Part 1: Foundations ✓
+Part 2: Physics & Input ✓
+Part 3: Core Mechanics ✓
+
+MIDTERM COMPLETE!
+
+Part 4: Polish & Complete Game
+- 8 more classes
+- UI, Audio, VFX
+- Final Sprint
+
+See you next class for UI System!
+
+

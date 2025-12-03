@@ -1,0 +1,503 @@
+CLASS 15: COROUTINES & TIMER SYSTEMS
+=====================================
+
+SLIDE 1: Recap of Class 14
+---------------------------
+- Singleton pattern
+- GameManager implementation
+- Game states and flow
+- Score tracking
+- Pause/Resume with timeScale
+- Manager communication
+
+SLIDE 2: The Timing Problem
+----------------------------
+How do we:
+- Wait 2 seconds before action?
+- Count down from 60?
+- Spawn enemies every 5 seconds?
+- Animate over time?
+
+Update runs every frame (too fast!)
+We need controlled timing.
+
+SLIDE 3: What are Coroutines?
+------------------------------
+- Functions that can pause execution
+- Resume on next frame or after delay
+- Perfect for timing and sequences
+- Use yield return statements
+- Must return IEnumerator
+
+SLIDE 4: Coroutine Syntax
+--------------------------
+```csharp
+IEnumerator MyCoroutine()
+{
+    Debug.Log("Start");
+    
+    yield return new WaitForSeconds(2f);
+    
+    Debug.Log("2 seconds later");
+    
+    yield return new WaitForSeconds(1f);
+    
+    Debug.Log("1 more second later");
+}
+```
+
+SLIDE 5: Starting Coroutines
+-----------------------------
+```csharp
+// Start a coroutine
+StartCoroutine(MyCoroutine());
+
+// Store reference
+Coroutine myCoroutine = StartCoroutine(MyCoroutine());
+
+// Start with string (not recommended)
+StartCoroutine("MyCoroutine");
+```
+
+SLIDE 6: Yield Return Options
+------------------------------
+```csharp
+yield return null;                     // Wait one frame
+yield return new WaitForSeconds(2f);   // Wait 2 seconds
+yield return new WaitForEndOfFrame();  // End of frame
+yield return new WaitForFixedUpdate(); // After physics
+yield return StartCoroutine(Other());  // Wait for coroutine
+yield break;                           // Exit coroutine
+```
+
+SLIDE 7: WaitForSeconds
+------------------------
+Most common yield:
+```csharp
+IEnumerator DelayedAction()
+{
+    Debug.Log("Starting...");
+    
+    yield return new WaitForSeconds(3f);
+    
+    Debug.Log("3 seconds passed!");
+    DoSomething();
+}
+```
+
+Affected by Time.timeScale!
+
+SLIDE 8: WaitForSecondsRealtime
+--------------------------------
+Ignores timeScale (for paused UI):
+```csharp
+IEnumerator PauseMenuAnimation()
+{
+    // Works even when Time.timeScale = 0
+    yield return new WaitForSecondsRealtime(0.5f);
+    
+    ShowNextElement();
+}
+```
+
+SLIDE 9: Timer Coroutine
+-------------------------
+```csharp
+private int remainingTime;
+
+IEnumerator TimerCoroutine(int seconds)
+{
+    remainingTime = seconds;
+    
+    while (remainingTime > 0)
+    {
+        UpdateTimerUI(remainingTime);
+        
+        yield return new WaitForSeconds(1f);
+        
+        remainingTime--;
+    }
+    
+    // Time's up!
+    OnTimerComplete();
+}
+```
+
+SLIDE 10: Starting the Timer
+-----------------------------
+```csharp
+public void StartGame(int timeInSeconds)
+{
+    // Reset state
+    score = 0;
+    
+    // Start timer
+    StartCoroutine(TimerCoroutine(timeInSeconds));
+    
+    // Start gameplay
+    wallManager.StartGame();
+}
+
+void OnTimerComplete()
+{
+    EndGame();
+}
+```
+
+SLIDE 11: Stopping Coroutines
+------------------------------
+```csharp
+private Coroutine timerCoroutine;
+
+public void StartTimer(int seconds)
+{
+    // Stop existing timer
+    if (timerCoroutine != null)
+    {
+        StopCoroutine(timerCoroutine);
+    }
+    
+    // Start new timer
+    timerCoroutine = StartCoroutine(TimerCoroutine(seconds));
+}
+
+public void StopTimer()
+{
+    if (timerCoroutine != null)
+    {
+        StopCoroutine(timerCoroutine);
+        timerCoroutine = null;
+    }
+}
+```
+
+SLIDE 12: StopAllCoroutines
+----------------------------
+```csharp
+void OnDisable()
+{
+    // Stop all coroutines on this object
+    StopAllCoroutines();
+}
+
+void EndGame()
+{
+    StopAllCoroutines();
+    // ... end game logic
+}
+```
+
+Warning: Stops ALL coroutines on this MonoBehaviour!
+
+SLIDE 13: Coroutine with Loop
+------------------------------
+```csharp
+IEnumerator SpawnEnemies()
+{
+    while (isGameRunning)
+    {
+        SpawnEnemy();
+        
+        yield return new WaitForSeconds(spawnInterval);
+    }
+}
+```
+
+Infinite loop with delay!
+
+SLIDE 14: Coroutine with Condition
+-----------------------------------
+```csharp
+IEnumerator WaitForCondition()
+{
+    Debug.Log("Waiting for player to be ready...");
+    
+    // Wait until condition is true
+    yield return new WaitUntil(() => playerReady);
+    
+    Debug.Log("Player is ready!");
+    StartGame();
+}
+
+// Also available:
+yield return new WaitWhile(() => isLoading);
+```
+
+SLIDE 15: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create timer coroutine in GameManager
+2. Implement countdown display
+3. Handle timer completion
+4. Add ability to stop timer
+5. Test with different durations
+6. Connect to UI (placeholder logs)
+7. Handle pause (stop/resume timer)
+
+SLIDE 16: Complete Timer System
+--------------------------------
+```csharp
+public class GameManager : MonoBehaviour
+{
+    private Coroutine timerCoroutine;
+    private int remainingTime;
+    
+    public event Action<int> OnTimerUpdated;
+    
+    public void StartGame(int seconds)
+    {
+        remainingTime = seconds;
+        timerCoroutine = StartCoroutine(TimerCoroutine());
+    }
+    
+    IEnumerator TimerCoroutine()
+    {
+        while (remainingTime > 0)
+        {
+            OnTimerUpdated?.Invoke(remainingTime);
+            yield return new WaitForSeconds(1f);
+            remainingTime--;
+        }
+        
+        OnTimerUpdated?.Invoke(0);
+        EndGame();
+    }
+    
+    void EndGame()
+    {
+        if (timerCoroutine != null)
+        {
+            StopCoroutine(timerCoroutine);
+        }
+        // ... end game
+    }
+}
+```
+
+SLIDE 17: Formatting Time
+--------------------------
+```csharp
+string FormatTime(int totalSeconds)
+{
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+    
+    return $"{minutes:00}:{seconds:00}";
+}
+
+// Examples:
+// 65 seconds → "01:05"
+// 130 seconds → "02:10"
+// 45 seconds → "00:45"
+```
+
+SLIDE 18: Pause-Aware Timer
+----------------------------
+```csharp
+IEnumerator TimerCoroutine()
+{
+    while (remainingTime > 0)
+    {
+        // Skip if paused
+        if (currentState == GameState.Paused)
+        {
+            yield return null;
+            continue;
+        }
+        
+        OnTimerUpdated?.Invoke(remainingTime);
+        yield return new WaitForSeconds(1f);
+        remainingTime--;
+    }
+    
+    EndGame();
+}
+```
+
+SLIDE 19: Alternative: Time.deltaTime
+--------------------------------------
+```csharp
+private float remainingTime;
+
+void Update()
+{
+    if (currentState != GameState.Playing) return;
+    
+    remainingTime -= Time.deltaTime;
+    
+    if (remainingTime <= 0)
+    {
+        remainingTime = 0;
+        EndGame();
+    }
+    
+    UpdateTimerUI(remainingTime);
+}
+```
+
+More precise but runs every frame.
+
+SLIDE 20: Sequence Coroutines
+------------------------------
+```csharp
+IEnumerator GameStartSequence()
+{
+    // Show "3"
+    ShowCountdown(3);
+    yield return new WaitForSeconds(1f);
+    
+    // Show "2"
+    ShowCountdown(2);
+    yield return new WaitForSeconds(1f);
+    
+    // Show "1"
+    ShowCountdown(1);
+    yield return new WaitForSeconds(1f);
+    
+    // Show "GO!"
+    ShowCountdown(0);
+    yield return new WaitForSeconds(0.5f);
+    
+    // Start actual game
+    BeginGameplay();
+}
+```
+
+SLIDE 21: Coroutine Best Practices
+-----------------------------------
+- Store reference if need to stop
+- Stop in OnDisable
+- Don't use string overload
+- Handle pause states
+- Keep coroutines focused
+- Avoid too many running at once
+
+SLIDE 22: Common Coroutine Mistakes
+------------------------------------
+- Forgetting to start coroutine
+- Not stopping when object destroyed
+- Using while(true) without yield
+- Forgetting yield return
+- Wrong WaitForSeconds value
+- Not handling pause
+
+SLIDE 23: Debugging Coroutines
+-------------------------------
+```csharp
+IEnumerator TimerCoroutine()
+{
+    Debug.Log("[Timer] Started");
+    
+    while (remainingTime > 0)
+    {
+        Debug.Log($"[Timer] {remainingTime} seconds left");
+        yield return new WaitForSeconds(1f);
+        remainingTime--;
+    }
+    
+    Debug.Log("[Timer] Completed!");
+}
+```
+
+SLIDE 24: Homework/Practice
+----------------------------
+- Implement countdown sequence (3, 2, 1, GO!)
+- Create spawn timer for power-ups
+- Add time bonus on wall clear
+- Implement overtime mode
+- Practice different yield types
+- Prepare for Midterm Sprint!
+
+SLIDE 25: Midterm Sprint Tomorrow!
+-----------------------------------
+Class 16: Midterm Project Sprint
+
+You should have:
+- Brick physics ✓
+- Click detection ✓
+- Wall generation ✓
+- Events ✓
+- GameManager ✓
+- Timer ✓
+
+Tomorrow: Put it all together!
+
+SLIDE 26: Pre-Midterm Checklist
+--------------------------------
+Test these before Class 16:
+- [ ] Click brick → Falls with physics
+- [ ] Wall generates on start
+- [ ] Score increases on brick hit
+- [ ] Timer counts down
+- [ ] Game ends when timer = 0
+- [ ] New wall spawns when cleared
+
+SLIDE 27: Project Architecture
+-------------------------------
+```
+GameManager (Singleton)
+├── Controls game state
+├── Tracks score
+├── Runs timer
+└── Coordinates managers
+
+WallManager
+├── Spawns walls
+├── Tracks bricks
+└── Detects wall cleared
+
+Brick3D
+├── Physics behavior
+├── Click handling
+└── Fires events
+
+RayCastManager
+├── Input handling
+└── Raycast detection
+```
+
+SLIDE 28: Part 3 Complete!
+---------------------------
+Midterm Build-up done!
+- Procedural generation
+- Event system
+- Game management
+- Timer/Coroutines
+
+Core game loop is complete!
+Next: Polish and features.
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- Coroutines pause execution
+- yield return controls timing
+- WaitForSeconds for delays
+- Store reference to stop
+- Stop in OnDisable
+- Perfect for timers and sequences
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Basic coroutine
+IEnumerator MyCoroutine()
+{
+    yield return new WaitForSeconds(1f);
+}
+
+// Start
+Coroutine c = StartCoroutine(MyCoroutine());
+
+// Stop
+StopCoroutine(c);
+StopAllCoroutines();
+
+// Yield options
+yield return null;                    // Next frame
+yield return new WaitForSeconds(2f);  // 2 seconds
+yield return new WaitForSecondsRealtime(2f);  // Unscaled
+yield return new WaitUntil(() => ready);  // Condition
+yield break;  // Exit
+```
+

@@ -1,0 +1,447 @@
+CLASS 11: FORCES & PHYSICS INTERACTIONS
+========================================
+
+SLIDE 1: Recap of Class 10
+---------------------------
+- Raycasting fundamentals
+- Camera.ScreenPointToRay
+- Physics.Raycast and RaycastHit
+- IOption interface pattern
+- Connecting clicks to bricks
+- Debug.DrawRay visualization
+
+SLIDE 2: Making Physics Feel Good
+----------------------------------
+Current state:
+- Click brick → It falls straight down
+- Boring and unrealistic
+
+What we want:
+- Click brick → It flies away dramatically
+- Impact affects nearby bricks
+- Satisfying game feel!
+
+SLIDE 3: AddForce
+------------------
+Apply force to Rigidbody:
+```csharp
+Rigidbody rb = GetComponent<Rigidbody>();
+
+// Apply force
+rb.AddForce(Vector3.up * 100f);
+
+// With ForceMode
+rb.AddForce(Vector3.forward * 50f, ForceMode.Impulse);
+```
+
+SLIDE 4: ForceMode Options
+---------------------------
+```csharp
+ForceMode.Force        // Continuous, uses mass
+ForceMode.Impulse      // Instant, uses mass
+ForceMode.Acceleration // Continuous, ignores mass
+ForceMode.VelocityChange // Instant, ignores mass
+```
+
+For our game:
+- Impulse = Best for impacts
+- Instant force considering mass
+
+SLIDE 5: Force vs Impulse
+--------------------------
+Force (continuous):
+```csharp
+// Apply every FixedUpdate
+void FixedUpdate()
+{
+    rb.AddForce(Vector3.forward * 10f, ForceMode.Force);
+}
+```
+
+Impulse (instant):
+```csharp
+// Apply once
+void OnClicked()
+{
+    rb.AddForce(Vector3.back * 500f, ForceMode.Impulse);
+}
+```
+
+SLIDE 6: Calculating Impact Direction
+--------------------------------------
+```csharp
+public void OnClicked(Vector3 impactPoint)
+{
+    // Direction from impact point to brick center
+    Vector3 direction = transform.position - impactPoint;
+    direction.Normalize();  // Make length 1
+    
+    // Apply force in that direction
+    rb.AddForce(direction * impactForce, ForceMode.Impulse);
+}
+```
+
+Brick flies away from click point!
+
+SLIDE 7: AddForceAtPosition
+----------------------------
+Force at specific point (more realistic):
+```csharp
+// Force applied at impact point
+rb.AddForceAtPosition(
+    direction * force,
+    impactPoint,
+    ForceMode.Impulse
+);
+```
+
+Creates rotation based on where hit!
+
+SLIDE 8: Torque
+----------------
+Apply rotational force:
+```csharp
+// Spin the object
+rb.AddTorque(Vector3.up * 100f);
+
+// Random tumbling
+Vector3 randomTorque = Random.insideUnitSphere * torqueAmount;
+rb.AddTorque(randomTorque, ForceMode.Impulse);
+```
+
+Makes bricks tumble realistically!
+
+SLIDE 9: Complete Impact Code
+------------------------------
+```csharp
+public void OnClicked(Vector3 impactPoint)
+{
+    // Release from wall
+    rb.isKinematic = false;
+    
+    // Calculate direction
+    Vector3 direction = (transform.position - impactPoint).normalized;
+    
+    // Add backward force
+    rb.AddForce(direction * impactForce, ForceMode.Impulse);
+    
+    // Add downward force
+    rb.AddForce(Vector3.down * fallForce, ForceMode.Impulse);
+    
+    // Add random rotation
+    Vector3 torque = Random.insideUnitSphere * torqueAmount;
+    rb.AddTorque(torque, ForceMode.Impulse);
+}
+```
+
+SLIDE 10: Physics.OverlapSphere
+--------------------------------
+Find all colliders in radius:
+```csharp
+float radius = 2f;
+Collider[] hitColliders = Physics.OverlapSphere(
+    transform.position,
+    radius
+);
+
+foreach (Collider col in hitColliders)
+{
+    Debug.Log($"Found: {col.name}");
+}
+```
+
+SLIDE 11: Impact Radius Effect
+-------------------------------
+When brick is hit, affect nearby bricks:
+```csharp
+void ApplyImpactToNearby(Vector3 impactPoint, float radius)
+{
+    Collider[] nearby = Physics.OverlapSphere(impactPoint, radius);
+    
+    foreach (Collider col in nearby)
+    {
+        Brick3D brick = col.GetComponent<Brick3D>();
+        if (brick != null && brick != this)
+        {
+            brick.ReceiveImpact(impactPoint);
+        }
+    }
+}
+```
+
+SLIDE 12: ReceiveImpact Method
+-------------------------------
+```csharp
+public void ReceiveImpact(Vector3 sourcePoint)
+{
+    // Calculate distance for falloff
+    float distance = Vector3.Distance(transform.position, sourcePoint);
+    float falloff = 1f - (distance / maxRadius);
+    falloff = Mathf.Clamp01(falloff);
+    
+    // Apply reduced force based on distance
+    Vector3 direction = (transform.position - sourcePoint).normalized;
+    rb.AddForce(direction * impactForce * falloff, ForceMode.Impulse);
+}
+```
+
+SLIDE 13: Layer Filtering
+--------------------------
+Only affect bricks:
+```csharp
+LayerMask brickLayer = LayerMask.GetMask("Brick");
+
+Collider[] nearby = Physics.OverlapSphere(
+    impactPoint,
+    radius,
+    brickLayer  // Only check brick layer
+);
+```
+
+Better performance!
+
+SLIDE 14: Explosion Force (Built-in)
+-------------------------------------
+Unity has built-in explosion:
+```csharp
+void CreateExplosion(Vector3 position, float force, float radius)
+{
+    Collider[] colliders = Physics.OverlapSphere(position, radius);
+    
+    foreach (Collider col in colliders)
+    {
+        Rigidbody rb = col.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.AddExplosionForce(force, position, radius);
+        }
+    }
+}
+```
+
+SLIDE 15: AddExplosionForce
+----------------------------
+```csharp
+rb.AddExplosionForce(
+    explosionForce,     // Force amount
+    explosionPosition,  // Center point
+    explosionRadius,    // Effect radius
+    upwardsModifier,    // Lift objects up
+    ForceMode.Impulse
+);
+```
+
+Automatically calculates direction and falloff!
+
+SLIDE 16: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Add force variables to Brick3D
+2. Implement directional impact force
+3. Add random torque
+4. Implement OverlapSphere for nearby bricks
+5. Create chain reaction effect
+6. Tune force values for good feel
+7. Test and iterate!
+
+SLIDE 17: Brick3D Force Variables
+----------------------------------
+```csharp
+public class Brick3D : MonoBehaviour, IOption
+{
+    [Header("Impact Settings")]
+    [SerializeField] private float impactForce = 400f;
+    [SerializeField] private float fallForce = 300f;
+    [SerializeField] private float torqueAmount = 50f;
+    [SerializeField] private float impactRadius = 1.5f;
+    
+    private Rigidbody rb;
+    private bool isDetached = false;
+    
+    // ... rest of code
+}
+```
+
+SLIDE 18: Complete OnClicked
+-----------------------------
+```csharp
+public void OnClicked(Vector3 impactPoint)
+{
+    if (isDetached) return;  // Already falling
+    
+    DetachBrick(impactPoint);
+    ApplyImpactToNearby(impactPoint);
+}
+
+void DetachBrick(Vector3 impactPoint)
+{
+    isDetached = true;
+    rb.isKinematic = false;
+    
+    Vector3 direction = (transform.position - impactPoint).normalized;
+    
+    rb.AddForce(direction * impactForce, ForceMode.Impulse);
+    rb.AddForce(Vector3.down * fallForce, ForceMode.Impulse);
+    rb.AddTorque(Random.insideUnitSphere * torqueAmount, ForceMode.Impulse);
+}
+```
+
+SLIDE 19: Nearby Impact Implementation
+---------------------------------------
+```csharp
+void ApplyImpactToNearby(Vector3 impactPoint)
+{
+    Collider[] nearby = Physics.OverlapSphere(
+        transform.position, 
+        impactRadius
+    );
+    
+    foreach (Collider col in nearby)
+    {
+        Brick3D brick = col.GetComponent<Brick3D>();
+        if (brick != null && brick != this && !brick.isDetached)
+        {
+            // Small push, not full detach
+            Rigidbody otherRb = brick.GetComponent<Rigidbody>();
+            Vector3 pushDir = (brick.transform.position - transform.position).normalized;
+            otherRb.AddForce(pushDir * impactForce * 0.3f, ForceMode.Impulse);
+        }
+    }
+}
+```
+
+SLIDE 20: Tuning Physics
+-------------------------
+Good starting values:
+- impactForce: 300-500
+- fallForce: 200-400
+- torqueAmount: 30-70
+- impactRadius: 1-2
+
+Tips:
+- Test frequently
+- Small changes, big differences
+- Watch for objects flying too far
+- Consider mass of objects
+
+SLIDE 21: Velocity Limits
+--------------------------
+Prevent objects going too fast:
+```csharp
+void FixedUpdate()
+{
+    // Clamp velocity
+    if (rb.velocity.magnitude > maxVelocity)
+    {
+        rb.velocity = rb.velocity.normalized * maxVelocity;
+    }
+}
+```
+
+SLIDE 22: Physics Debugging
+----------------------------
+```csharp
+void OnDrawGizmosSelected()
+{
+    // Visualize impact radius
+    Gizmos.color = Color.yellow;
+    Gizmos.DrawWireSphere(transform.position, impactRadius);
+}
+
+void DebugForces()
+{
+    Debug.Log($"Velocity: {rb.velocity}");
+    Debug.Log($"Angular Velocity: {rb.angularVelocity}");
+}
+```
+
+SLIDE 23: Common Force Mistakes
+--------------------------------
+- Applying force to kinematic Rigidbody
+- Force too strong (objects fly away)
+- Force too weak (no visible effect)
+- Forgetting ForceMode
+- Applying in Update instead of once
+- Not normalizing direction
+
+SLIDE 24: Physics Feel Tips
+----------------------------
+Good game feel:
+- Slight delay before impact
+- Exaggerated forces
+- Screen shake (later)
+- Sound effects (later)
+- Particle effects (later)
+
+Physics should feel satisfying!
+
+SLIDE 25: Performance Considerations
+-------------------------------------
+- OverlapSphere is expensive
+- Use LayerMask to filter
+- Limit radius
+- Don't call every frame
+- Consider object pooling
+- Profile if slow
+
+SLIDE 26: Homework/Practice
+----------------------------
+- Tune force values for best feel
+- Experiment with explosion force
+- Create chain reaction system
+- Add velocity limits
+- Implement ground bounce
+- Read: Unity Manual "Rigidbody.AddForce"
+
+SLIDE 27: Next Class Preview
+-----------------------------
+- Procedural Generation
+- Wall Generator script
+- Nested loops for grid
+- Position calculations
+- Spawning brick prefabs
+- Creating complete walls
+
+SLIDE 28: Part 2 Complete!
+---------------------------
+Physics & Input Systems done!
+- Rigidbody physics
+- Colliders and collision
+- Input System
+- Raycasting
+- Forces and interactions
+
+You can now:
+- Click bricks
+- Apply realistic forces
+- Create chain reactions
+
+SLIDE 29: Questions?
+---------------------
+Key Takeaways:
+- AddForce applies physics forces
+- ForceMode.Impulse for instant impact
+- Direction calculation for realism
+- AddTorque for rotation
+- OverlapSphere for area effects
+- Tune values for game feel
+
+SLIDE 30: Quick Reference
+--------------------------
+```csharp
+// Apply force
+rb.AddForce(direction * force, ForceMode.Impulse);
+
+// Apply at position
+rb.AddForceAtPosition(force, position, ForceMode.Impulse);
+
+// Apply torque
+rb.AddTorque(torque, ForceMode.Impulse);
+
+// Explosion force
+rb.AddExplosionForce(force, center, radius);
+
+// Find nearby
+Physics.OverlapSphere(center, radius, layerMask);
+```
+

@@ -1,0 +1,333 @@
+CLASS 3: 3D PRIMITIVES & MATERIALS
+===================================
+
+SLIDE 1: Recap of Class 2
+--------------------------
+- GameObjects and Components
+- Transform: Position, Rotation, Scale
+- Parent-child relationships
+- Camera setup and configuration
+- Directional Light setup
+- Scene organization
+
+SLIDE 2: 3D Primitives
+-----------------------
+Built-in 3D shapes:
+- Cube: Box shape, 6 faces
+- Sphere: Ball shape
+- Capsule: Pill shape
+- Cylinder: Tube with caps
+- Plane: Flat surface (one-sided)
+- Quad: Single flat face
+
+Create: GameObject > 3D Object > [Shape]
+
+SLIDE 3: Cube
+--------------
+- 6 faces, 8 vertices
+- Default size: 1x1x1 units
+- Box Collider auto-added
+- Great for: Walls, bricks, boxes, buildings
+- Our bricks will be scaled cubes!
+
+Properties:
+- Mesh Filter: Defines shape
+- Mesh Renderer: Makes it visible
+- Box Collider: Physics collision
+
+SLIDE 4: Plane
+---------------
+- Flat rectangular surface
+- Default: 10x10 units
+- One-sided (only visible from above)
+- Mesh Collider auto-added
+- Great for: Ground, floors, water surfaces
+
+Our ground will be a scaled Plane!
+
+SLIDE 5: Other Primitives
+--------------------------
+Sphere:
+- Round ball shape
+- Good for: Balls, planets, pickups
+
+Capsule:
+- Cylinder with rounded ends
+- Good for: Characters, pills
+
+Cylinder:
+- Tube with flat ends
+- Good for: Pillars, cans, wheels
+
+SLIDE 6: What is a Material?
+-----------------------------
+- Defines surface appearance
+- Color, texture, shininess
+- Applied to Mesh Renderer
+- Can be shared across objects
+- Created as asset file (.mat)
+
+Material = How light interacts with surface
+
+SLIDE 7: Creating a Material
+-----------------------------
+Method 1:
+1. Right-click in Project window
+2. Create > Material
+3. Name it descriptively
+
+Method 2:
+1. Select object
+2. In Inspector, find Mesh Renderer
+3. Click material slot
+4. Click "Create" or drag existing
+
+SLIDE 8: URP Lit Shader
+------------------------
+- Default shader for URP
+- Physically-based rendering (PBR)
+- Realistic light interaction
+- Properties:
+  * Base Map: Main texture/color
+  * Metallic: How metallic (0-1)
+  * Smoothness: How shiny (0-1)
+  * Normal Map: Surface detail
+
+SLIDE 9: Material Properties - Base Map
+----------------------------------------
+- Main color or texture
+- Click color box to pick color
+- Drag texture to slot
+- Tint multiplies with texture
+- Alpha for transparency (if enabled)
+
+For our game:
+- Ground: Brown/Gray
+- Bricks: Red/Orange
+
+SLIDE 10: Material Properties - Metallic
+-----------------------------------------
+- 0 = Non-metallic (plastic, wood, fabric)
+- 1 = Fully metallic (gold, silver, chrome)
+- Affects reflection behavior
+- Most objects: 0 or very low
+- Metals: High value
+
+Our bricks: 0 (non-metallic)
+
+SLIDE 11: Material Properties - Smoothness
+-------------------------------------------
+- 0 = Rough (matte, diffuse)
+- 1 = Smooth (mirror-like, glossy)
+- Controls reflection sharpness
+- Affects specular highlights
+
+Examples:
+- Concrete: 0.1-0.2
+- Plastic: 0.3-0.5
+- Polished metal: 0.8-1.0
+
+SLIDE 12: Applying Materials
+-----------------------------
+Method 1: Drag and drop
+- Drag material onto object in Scene
+
+Method 2: Inspector
+- Select object
+- Find Mesh Renderer > Materials
+- Drag material to Element 0 slot
+
+Method 3: Multiple materials
+- Objects can have multiple material slots
+- Each slot for different part of mesh
+
+SLIDE 13: Creating Ground Material
+-----------------------------------
+Steps:
+1. Create folder: Assets/Materials
+2. Create Material: "Ground"
+3. Set Base Color: Brown/Gray (#8B7355)
+4. Metallic: 0
+5. Smoothness: 0.2 (slightly rough)
+6. Apply to Plane
+
+SLIDE 14: Creating Brick Material
+----------------------------------
+Steps:
+1. In Materials folder
+2. Create Material: "Brick"
+3. Set Base Color: Red/Orange (#CD5C5C)
+4. Metallic: 0
+5. Smoothness: 0.3
+6. Save for later (prefab class)
+
+SLIDE 15: Setting Up Ground Plane
+----------------------------------
+1. Create Plane: GameObject > 3D Object > Plane
+2. Rename to "Ground"
+3. Position: (0, -1, 0)
+4. Scale: (5, 1, 5) - makes it 50x50 units
+5. Apply Ground material
+6. Add Tag: "Ground" (create if needed)
+
+SLIDE 16: Tags for Ground
+--------------------------
+Creating "Ground" tag:
+1. Select Ground object
+2. In Inspector, click Tag dropdown
+3. Click "Add Tag..."
+4. Click + under Tags
+5. Type "Ground"
+6. Save
+7. Select Ground again, assign tag
+
+We'll use this for collision detection!
+
+SLIDE 17: Textures
+-------------------
+- Image files applied to materials
+- Add detail without geometry
+- Common formats: PNG, JPG, TGA
+- Import by dragging to Project
+- Assign to material's Base Map
+
+Types:
+- Albedo/Diffuse: Main color
+- Normal Map: Surface bumps
+- Metallic/Roughness: Surface properties
+
+SLIDE 18: UV Mapping (Concept)
+-------------------------------
+- How texture wraps around 3D object
+- UV coordinates (U = horizontal, V = vertical)
+- Primitives have automatic UVs
+- Custom models need UV setup
+- Tiling: Repeat texture
+- Offset: Shift texture position
+
+SLIDE 19: Material Tiling
+--------------------------
+- Repeat texture across surface
+- Found in material's Base Map settings
+- Tiling X, Y: Repeat count
+- Offset X, Y: Starting position
+
+Example:
+- Tiling (10, 10): Texture repeats 10x10
+- Good for large surfaces like ground
+
+SLIDE 20: Emission Property
+----------------------------
+- Makes material glow
+- Self-illuminating
+- Doesn't light other objects (by default)
+- Great for: Neon, screens, magic effects
+- Color and intensity
+
+Enable in material settings
+
+SLIDE 21: Transparency
+-----------------------
+Surface Type options:
+- Opaque: Solid, no transparency
+- Transparent: See-through
+
+For transparent:
+1. Change Surface Type to Transparent
+2. Adjust Alpha in Base Color
+3. Or use texture with alpha channel
+
+SLIDE 22: Render Face
+----------------------
+- Front: Only front visible (default)
+- Back: Only back visible
+- Both: Both sides visible
+
+Plane is one-sided by default!
+For two-sided, set Render Face to Both
+
+SLIDE 23: Material Instances
+-----------------------------
+- Materials are shared by default
+- Changing material affects ALL objects using it
+- For unique appearance:
+  * Create new material
+  * Or modify via script (creates instance)
+
+Good for: Variations of same base look
+
+SLIDE 24: Hands-On Exercise
+----------------------------
+Today's Goals:
+1. Create Materials folder
+2. Create Ground material (brown/gray)
+3. Create Brick material (red/orange)
+4. Set up Ground plane with material
+5. Add "Ground" tag
+6. Create test Cube with Brick material
+7. Experiment with material properties
+8. Save scene
+
+SLIDE 25: Project Organization
+-------------------------------
+Current folder structure:
+```
+Assets/
+├── Materials/
+│   ├── Ground.mat
+│   └── Brick.mat
+├── Scenes/
+│   └── Gameplay.unity
+└── (other Unity folders)
+```
+
+Keep organized from the start!
+
+SLIDE 26: Color Tips
+---------------------
+For game feel:
+- Ground: Neutral, not distracting
+- Bricks: Warm colors (red, orange)
+- Contrast between elements
+- Consider color blindness
+
+Color picker:
+- Eyedropper tool
+- Hex values for precision
+- HDR for bright/emission colors
+
+SLIDE 27: Common Mistakes
+--------------------------
+- Material not assigned (pink = missing)
+- Wrong shader selected
+- Texture too large (performance)
+- Smoothness too high (unrealistic)
+- Forgetting to save material
+- Modifying shared material accidentally
+
+SLIDE 28: Performance Considerations
+-------------------------------------
+- Share materials when possible
+- Smaller textures = better performance
+- Power of 2 textures (256, 512, 1024, 2048)
+- Avoid too many unique materials
+- Batching works with shared materials
+
+SLIDE 29: Homework/Practice
+----------------------------
+- Create 5 different materials
+- Experiment with all properties
+- Try adding a texture (find free ones online)
+- Create a simple scene with varied materials
+- Practice color theory
+- Read: Unity Manual "Materials"
+
+SLIDE 30: Next Class Preview
+-----------------------------
+- Prefabs: Reusable objects
+- Creating Brick prefab
+- Prefab workflow
+- Project organization
+- Prefab variants
+- Preparing for procedural generation
+
