@@ -21,12 +21,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: matWithCrack
-  m_Shader: {fileID: -6465566751694194690, guid: 17dd44aa22f746a4183b0a854b6fb1ae, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 5ce02634035148a44a8fad7dbe710d63, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _EMISSION
+  m_InvalidKeywords: []
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -38,6 +37,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _SampleTexture2D_191c7e6a25004224adc0389e47291217_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: de4597eb67f7c9c4c921c24fdd85c8ba, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _crack:
         m_Texture: {fileID: 2800000, guid: 40a0b0e48e497e442a863d98401b14f7, type: 3}
         m_Scale: {x: 1, y: 1}
